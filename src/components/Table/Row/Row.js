@@ -2,7 +2,7 @@ import React from 'react';
 import Utils from '../Utils/Utils';
 import RowEdit from './RowEdit';
 
-function Row({ columns, row, index, onChange }) {
+function Row({ columns, row, index, onChange }) {  
   const rowCells = columns.map((column, i) => {
     return column.editable && column?.visible === true ?
       <div className="row-cell" key={i}>

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-function RowEdit({type, value, onChange}) {
+function RowEdit({ type, value, onChange }) {
+  const [inputValue, setValue] = useState(value);
   const inputType = (type) => {
     switch (type) {
       case Number:
@@ -12,17 +13,17 @@ function RowEdit({type, value, onChange}) {
     }
   }
 
-  let oldValue = value;
-  const onBlur = (e) => {
-    if (oldValue !== e.target.value) {
-      onChange(inputType(type)==='number' ? parseInt(e.target.value) : e.target.value);
-      oldValue = e.target.value;
-    }
+  const handleClick = (e) => {
+    onChange(inputType(type) === 'number' ? parseInt(inputValue) : inputValue);
   };
 
   return (
     <div className="row">
-      <input type={inputType(type)} defaultValue={value} onBlur={onBlur} />
+      <span>{inputValue}</span>
+      <input type={inputType(type)} value={inputValue} onChange={(e) => setValue(e.target.value)} />
+      <button className="apply" onClick={handleClick}>
+        apply
+      </button>
     </div>
   );
 }

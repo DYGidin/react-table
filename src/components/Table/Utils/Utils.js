@@ -1,6 +1,6 @@
 const Utils = {
-  sum: (val) => val.reduce((acc, val) => acc + val),
-  count: (val) => val.reduce((acc, val) => acc + 1, 0),
+  sum: (val) => val.reduce((acc, val) => parseFloat(acc) + parseFloat(val), 0),
+  count: (val) => val.reduce((acc, val) => parseFloat(acc) + 1, 0),
   max: (val) => val.reduce((acc, val) => Math.max(acc, val)),
   min: (val) => val.reduce((acc, val) => Math.min(acc, val)),
   formula: (val, formulaStr) => {
@@ -16,7 +16,7 @@ const Utils = {
       values.forEach(v => {
         formulaStr = formulaStr.replace(v.name, v.value, '/g');
       });
-
+      
       return eval(formulaStr);
     }
     catch (error) {

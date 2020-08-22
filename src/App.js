@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Table from './components/Table/Table';
 import Utils from './components/Table/Utils/Utils';
-import Groups from './components/Table/Utils/Groups';
 
 function App() {
-  const table = {
+  const mock = {
     columns: [{
       name: 'category',
       title: 'Category',
@@ -14,8 +13,7 @@ function App() {
     {
       name: 'country',
       title: 'Country',
-      type: Number,
-      editable: true
+      type: String
     },
     {
       name: 'name',
@@ -56,15 +54,19 @@ function App() {
       { category: 'Electronics', price: 66.5, quant: 45, status: 'delivery', name: 'Nexus 7', country: 'Japan' },
       { category: 'Electronics', price: 30, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
     ],
-    groups: ['country', 'status', 'category']
+    groups: ['status', 'country', 'category', 'sum']
   }
 
-  let dataTable = JSON.parse(JSON.stringify(table));  
-  dataTable = new Groups(dataTable);
-  
+  const [table, setTable] = useState(mock);
+
+  const handleClick = () => {
+    setTable({ ...table, groups: ['status', 'category'] });
+  }
+
   return (
     <div className="app">
-      <Table dataTable={dataTable}></Table>
+      <button onClick={handleClick}>test</button>
+      <Table table={table}></Table>
     </div>
   );
 }

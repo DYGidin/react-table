@@ -10,11 +10,12 @@
 import Utils from './Utils';
 
 class Groups {
+  paramsRegExp = /[^{}]+(?=\})/g;
 
   /**
    * Формирование массива для группировки
-   * @param {*} inGroup - группа
-   * @param {*} inlevel - уровень
+   * @param inGroup - группа
+   * @param inlevel - уровень
    */
   getPath = (inGroup, inlevel) => {
     let result = [];
@@ -55,8 +56,8 @@ class Groups {
 
   /**
    * Создание объекта по карте
-   * @param {*} map - карта
-   * @param {*} row - объект (строка)
+   * @param map - карта
+   * @param row - объект (строка)
    */
   createObjectByMap = (map, row) => {
     const result = { key: map.key, value: row[map.key] }
@@ -68,9 +69,9 @@ class Groups {
 
   /**
    * Создание дерева по карте
-   * @param {*} map - карта
+   * @param map - карта
    */
-  createTree = (map) => {
+  mapToTree = (map) => {
     const tree = [];
     this.dataTable.rows.forEach(row => {
       for (let index = 0; index < Object.keys(row).length; index++) {
@@ -84,7 +85,7 @@ class Groups {
 
   /**
    * Создание группы
-   * @param {*} arr - объект
+   * @param arr - объект
    */
   createGroup = (arr) => {
     if (arr.children && arr.children.key) {
@@ -110,9 +111,9 @@ class Groups {
 
   /**
    * Создание групп 
-   * @param {*} tree - дерево 
+   * @param tree - дерево 
    */
-  createGroups = (tree) => {
+  treeToGroups = (tree) => {
     let result = [];
     const list = Object.keys(Utils.groupBy(this.dataTable.rows, this.dataTable.groups[0]));
     list.forEach(g => {
@@ -123,7 +124,7 @@ class Groups {
 
   /**
    * Конвертировать группы в путь
-   * @param {*} groups - массив групп
+   * @param groups - массив групп
    */
   groupsToPath = (groups) => {
     let result = [];
@@ -137,9 +138,13 @@ class Groups {
     return result;
   }
 
-
+  /**
+   * Фильтрация данных по строке группы
+   * @param rows - записи
+   * @param filterStr - строка / фильтр
+   */
   filter = (rows, filterStr) => {
-    const arr = filterStr.match(/[^{}]+(?=\})/g);
+    const arr = filterStr.match(this.paramsRegExp);
     if (!arr) return [];
 
     const children = arr[0].split('=')[1], name = arr[1].split('=')[1];
@@ -156,28 +161,38 @@ class Groups {
           i++
         }
       }
-      return i == args.length
+      return i === args.length
     })
     return filtered
   }
 
+  /**
+   * Парсинг для получения данных по группе
+   * @param group - группа в виде строки
+   */
   getGroupData = (group) => {
-    const arr = group.match(/[^{}]+(?=\})/g);
+    const arr = group.match(this.paramsRegExp);
     return { key: arr[1].split('=')[0], name: arr[1].split('=')[1], root: arr[0].split('=')[1], level: arr[arr.length - 1].split('=')[1] }
   }
 
-  getGroups = (groupsPath, { columns, rows } = this.dataTable) => {
+  /**
+   * Получение готового списка групп
+   * @param groupsPath - пути (строки групп)
+   * @param { columns, rows } - колокни, записи 
+   */
+  getGroups = (groupsPath, { columns, rows }) => {
+
     const newRows = [];
     let newGroups = [];
-    groupsPath.forEach((group, i) => {
-      const groupData = this.getGroupData(group);
+    groupsPath.forEach((path, i) => {
+      const groupData = this.getGroupData(path);
       let countRows = 0;
-      if (groupData.root === 'false') {
-
+      if (groupData.root === 'false') {        
         countRows = 0;
-        this.filter(rows, group).map((row, i) => {
-          newRows.push({ group: group, ...row });
-          //newRows.push({ group: group, row: row });
+        this.filter(rows, path).map((row, i) => {          
+          const newRow = row;
+          newRow.path = path
+          newRows.push(newRow);
           countRows++;
         })
 
@@ -185,9 +200,9 @@ class Groups {
           delete groupsPath[i]
         }
       }
-
+      
       newGroups.push({
-        group: group,
+        path: path,
         key: groupData.key,
         name: groupData.name,
         root: groupData.root,
@@ -195,14 +210,14 @@ class Groups {
       });
 
     });
-
+   
     newGroups = newGroups.map((group) => {
       return {
-        childrenCount: this.filter(rows, group.group).length, ...group
+        childrenCount: this.filter(rows, group.path).length, ...group
       }
     });
 
-    newGroups = newGroups.filter(g => g.childrenCount !== 0);    
+    newGroups = newGroups.filter(g => g.childrenCount !== 0);
     columns = columns.map((column) => {
       return {
         visible: newGroups.filter(g => g.key === column.name).length ? false : true,
@@ -212,13 +227,30 @@ class Groups {
     return { columns, groups: newGroups, rows: newRows }
   }
 
+  /**
+   * Сформировать вычисляемые записи
+   */
+  calcFormulaRows = () => {
+    this.dataTable.columns.filter(col => col.formula).forEach(column => {
+      this.dataTable.rows = this.dataTable.rows.map(row => {
+        let newRow = {}
+        newRow[column.name] = Utils.formula(row, column.formula);
+        return {
+          ...row, ...newRow
+        }
+      });
+    });    
+  }
+
   constructor(dataTable) {
     this.dataTable = dataTable;
+    this.calcFormulaRows();
     const map = this.createMap();
-    const tree = this.createTree(map);
-    const groups = this.createGroups(tree);
-    const result = this.groupsToPath(groups);
-    return this.getGroups(result, this.dataTable)
+    const tree = this.mapToTree(map);    
+    const groups = this.treeToGroups(tree);
+    const paths = this.groupsToPath(groups);        
+    const result = this.getGroups(paths, this.dataTable);    
+    return result;
   }
 }
 
