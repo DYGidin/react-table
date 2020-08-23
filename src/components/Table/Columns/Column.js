@@ -1,8 +1,9 @@
 import React from 'react';
 function Column(props) {
+  const { children } = props;
   return (
     <div className="column">
-      {props.column.name}
+      {children}
     </div>
   );
 }
