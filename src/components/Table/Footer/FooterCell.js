@@ -8,7 +8,7 @@ function FooterCell({ column, rows }) {
     )
   ) : '';
   return (
-    <div className="footer-cell">
+    <div className="react-table__footer-cell">
       {result}
     </div>
   );

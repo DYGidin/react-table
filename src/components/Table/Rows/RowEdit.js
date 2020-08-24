@@ -26,7 +26,7 @@ function RowEdit({ type, value, onChange }) {
   };
 
   return (
-    <div className="row">
+    <div className="react-table__row">
       <input type={inputType(type)} ref={inputEl} onBlur={onBlur} />
     </div>
   );

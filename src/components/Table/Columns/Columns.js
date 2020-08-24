@@ -1,9 +1,7 @@
 import React from 'react';
-function Columns(props) {
-  const { columns, children } = props;  
+function Columns({children}) {
   return (
-    <div className="columns"
-      style={{ marginLeft: columns.filter(col => col.visible === false).length * 20 }}>
+    <div className="react-table__columns">
       {children}
     </div>
   );

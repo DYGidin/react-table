@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import './App.css';
 import Table from './components/Table/Table';
 import Utils from './Utils/Utils';
+import 'boxicons';
 
 function App() {
   const mock = {
     columns: [{
       name: 'category',
-      title: 'Category',
-      total: (val) => Utils.count(val)
+      title: 'Category'
     },
     {
       name: 'country',
@@ -18,7 +18,8 @@ function App() {
     {
       name: 'name',
       title: 'Name',
-      type: String
+      type: String,
+      total: (val) => Utils.count(val)
     },
     {
       name: 'status',
@@ -58,7 +59,7 @@ function App() {
   const [table, setTable] = useState(mock);
 
   const handleClick = () => {
-    setTable({ ...table, groups: ['country', 'status'] });
+    setTable({ ...table, groups: ['country', 'category', 'status'] });
   }
 
   return (

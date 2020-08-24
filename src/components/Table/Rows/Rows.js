@@ -1,10 +1,9 @@
 import React from 'react';
 
 function Rows(props) {
-  const { children } = props;  
-  
+  const { children } = props;    
   return (
-    <div className="rows">
+    <div className="react-table__rows">
       {children}
     </div>
   )

@@ -172,7 +172,11 @@ class Groups {
    */
   getGroupData = (group) => {
     const arr = group.match(this.paramsRegExp);
-    return { key: arr[1].split('=')[0], name: arr[1].split('=')[1], root: arr[0].split('=')[1], level: arr[arr.length - 1].split('=')[1] }
+    return { 
+      key: arr[1].split('=')[0], 
+      name: arr[1].split('=')[1], 
+      root: arr[0].split('=')[1]==='false' ? false : true, 
+      level: arr[arr.length - 1].split('=')[1] }
   }
 
   /**
@@ -187,7 +191,7 @@ class Groups {
     groupsPath.forEach((path, i) => {
       const groupData = this.getGroupData(path);
       let countRows = 0;
-      if (groupData.root === 'false') {        
+      if (groupData.root === false) {        
         countRows = 0;
         this.filter(rows, path).map((row, i) => {          
           const newRow = row;
@@ -220,7 +224,7 @@ class Groups {
     newGroups = newGroups.filter(g => g.childrenCount !== 0);
     columns = columns.map((column) => {
       return {
-        visible: newGroups.filter(g => g.key === column.name).length ? false : true,
+        isGroup: newGroups.filter(g => g.key === column.name).length ? false : true,
         ...column
       }
     });

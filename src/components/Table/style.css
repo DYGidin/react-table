@@ -1,4 +1,4 @@
-.table {
+.react-table {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
@@ -6,29 +6,37 @@
   text-align: left;
 }
 
-.columns,
-.footer,
-.row {
+.react-table__columns,
+.react-table__footer,
+.react-table__row {
   display: flex;
 }
 
-.columns {
+.react-table__columns {
   background: #fcfcfc;
 }
 
-.column {
+.react-table__column {
+  cursor: pointer;
   padding: 5px;
   border-bottom: 1px solid #cdcdcd;
   border-left: 1px solid #cdcdcd;
   width: 100%;
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.column + .column {
+.react-table__column-link {
+  text-decoration: none;
+}
+
+.react-table__column + .react-table__column {
   border-left: 1px solid #cdcdcd;
 }
 
-.row-cell {
+.react-table__row-cell {
   border: 1px solid #cdcdcd;
   padding: 5px;
   width: 100%;
@@ -38,23 +46,23 @@
   align-items: center;
 }
 
-.row-cell input {
+.react-table__row-cell input {
   width: 100%;
 }
 
-.row:last-child .row-cell {
+.react-table__row:last-child .react-table__row-cell {
   border-bottom: none;
 }
 
-.row-cell + .row-cell {
+.react-table__row-cell + .react-table__row-cell {
   border: 1px solid #cdcdcd;
 }
 
-.footer {
+.react-table__footer {
   background: #fcfcfc;
 }
 
-.footer-cell {
+.react-table__footer-cell {
   padding: 5px;
   width: 100%;
   overflow: hidden;
@@ -62,16 +70,16 @@
   border-top: 1px solid #cdcdcd;
 }
 
-.footer-cell + .footer-cell {
+.react-table__footer-cell + .react-table__footer-cell {
   border-left: 1px solid #cdcdcd;
 }
 
-.footer-container {
+.react-table__footer-container {
   width: 100%;
   display: flex;
 }
 
-.group-name {
+.react-table__group-name {
   padding: 5px;
   border: 1px solid #ccc;
 }
