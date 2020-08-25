@@ -9,8 +9,7 @@ import Group from './Groups/Group';
 
 import './style.css';
 function Table({ table }) {
-  let [dataTable, setDataTable] = useState(table);
-  //const [rows, setRows] = useState(table.rows);
+  let [dataTable, setDataTable] = useState(table);  
   const { columns, groups, rows } = dataTable || [];
   const marginGroup = columns.filter(col => col.isGroup === false).length * 20;
 
@@ -19,6 +18,7 @@ function Table({ table }) {
       const result = new Groups(table);
       setDataTable(result);
     }
+    sortRows(dataTable.columns.find(c => c?.sort), false);
   }, [table])
 
   const onChange = ({ index, name, value }) => {
@@ -28,16 +28,25 @@ function Table({ table }) {
     setDataTable(result);
   }
 
-  const sortRows = (column) => {
+  const sortRows = (column, revers = true) => {
+    if (!column) return;
+
+    const newColumns = columns.map(c => {
+      let sort = '';
+      if (c.name === column.name) {
+        sort = revers === true ? c.sort === 'asc' ? 'desc' : 'asc' : column.sort;
+      }
+      return { ...c, sort: sort }
+    });
+
+    const sort = newColumns.find(c => c.name === column.name).sort;
+
     const newRows = [...rows].sort((a, b) => {
-      return (column?.sort === 'asc' ?
+      return (sort === 'asc' ?
         a[column.name] > b[column.name]
         : a[column.name] < b[column.name]) ? 1 : -1
     });
-    const newColumns = columns.map(c => {
-      return { ...c, sort: c.name===column.name && c?.sort === 'asc' ? 'desc' : 'asc' }
-    });
-    console.log(newColumns)
+
     dataTable = { ...dataTable, ...{ rows: newRows }, ...{ columns: newColumns } }
     setDataTable(dataTable);
   }
