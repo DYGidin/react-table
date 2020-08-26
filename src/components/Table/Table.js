@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Columns, Column } from './Columns';
-import { Rows, Row } from './Rows';
+import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
 
 import Groups from '../../Utils/Groups';
 import GroupsComponent from './Groups/Groups';
 import Group from './Groups/Group';
+import SearchBar from './SearchBar/SearchBar';
 
 import './style.css';
 function Table({ table }) {
-  let [dataTable, setDataTable] = useState(table);  
+  let [dataTable, setDataTable] = useState(table);
   const { columns, groups, rows } = dataTable || [];
   const marginGroup = columns.filter(col => col.isGroup === false).length * 20;
 
@@ -51,8 +52,18 @@ function Table({ table }) {
     setDataTable(dataTable);
   }
 
+  const [searchStr, setSearchStr] = useState(null);
+
+  const handleSearchBar = (value) => {
+    setSearchStr(value);
+  }
+
   return (
     <div className="react-table">
+      <SearchBar onChange={(value) => handleSearchBar(value)}></SearchBar>
+      {/* <FilterRows rows={rows} searchStr={searchStr}>
+
+      </FilterRows> */}
       {groups?.length ?
         <GroupsComponent>
           <div style={{ marginLeft: marginGroup }}>
@@ -97,9 +108,12 @@ function Table({ table }) {
             )}
           </Columns>
           <Rows>
-            {rows.map((row, i) =>
-              <Row columns={columns} row={row} key={i} index={i} />
-            )}
+            <FilterRows rows={rows} 
+              searchStr={searchStr}
+              searchResult={(rows) =>
+                rows.map((row, i) => <Row columns={columns} row={row} key={i} index={i} />)
+              }>
+            </FilterRows>
           </Rows>
           <Footer columns={columns}>
             {columns.filter(c => c?.visible !== false).map((column, i) =>
