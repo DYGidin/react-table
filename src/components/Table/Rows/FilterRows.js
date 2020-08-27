@@ -1,45 +1,36 @@
-function FilterRows(props) {
+function FilterRows({ rows, filter, result }) {
   const excludeColumns = ['id'];
 
-  const sortRows = (column, revers = true) => {
+  const orderBy = (column, sort = 'asc') => {
     if (!column) return;
-
-    const newColumns = columns.map(c => {
-      let sort = '';
-      if (c.name === column.name) {
-        sort = revers === true ? c.sort === 'asc' ? 'desc' : 'asc' : column.sort;
-      }
-      return { ...c, sort: sort }
-    });
-
-    const sort = newColumns.find(c => c.name === column.name).sort;
-
     const newRows = [...rows].sort((a, b) => {
       return (sort === 'asc' ?
-        a[column.name] > b[column.name]
-        : a[column.name] < b[column.name]) ? 1 : -1
+        a[column] > b[column]
+        : a[column] < b[column]) ? 1 : -1
     });
-
-    dataTable = { ...dataTable, ...{ rows: newRows }, ...{ columns: newColumns } }
-    setDataTable(dataTable);
+    return newRows;
   }
 
-  let filteredData = [];
-  const filterData = (value) => {
-    const lowercasedValue = value.toLowerCase().trim();
+
+  const filterData = () => {
+    let filteredData = [...rows];
+    if (filter?.orderBy)
+      filteredData = orderBy(filter.orderBy[0], filter.orderBy[1])
+
+    const lowercasedValue = filter?.searchStr ? filter.searchStr.toLowerCase().trim() : '';
+
     if (lowercasedValue === '') {
-      return props.rows;
+      return filteredData;
     } else {
-      filteredData = [...props.rows].filter(item => {
+      filteredData = [...rows].filter(item => {
         return Object.keys(item).some(key =>
           excludeColumns.includes(key) ? false : item[key].toString().toLowerCase().includes(lowercasedValue)
         );
       });
-
     }
     return filteredData;
   }
 
-  return (props.searchResult(filterData(props.searchStr || '')))
+  return (result(filterData()))
 }
 export default FilterRows;

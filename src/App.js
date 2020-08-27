@@ -34,6 +34,7 @@ function App() {
     {
       name: 'quant',
       title: 'Quant',
+      sort:'asc',
       type: Number,
       total: (val) => Utils.sum(val)
     },
@@ -52,8 +53,8 @@ function App() {
       { category: 'Electronics', price: 25.4, quant: 12, status: 'processing', name: 'iPhone 5', country: 'Japan' },
       { category: 'Electronics', price: 66.5, quant: 45, status: 'delivery', name: 'Nexus 7', country: 'Japan' },
       { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
-    ],
-    //groups: ['status', 'country', 'category']
+    ],    
+    groups: ['status', 'country', 'category']
   }
 
   const [table, setTable] = useState(mock);
