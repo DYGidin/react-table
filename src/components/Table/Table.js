@@ -14,21 +14,26 @@ function Table({ table }) {
   const [filter, setFilter] = useState(table.filter || null);
   const { columns, groups, rows } = dataTable || [];
   const marginGroup = columns.filter(col => col.isGroup === false).length * 20;
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
     if (table.groups) {
       const result = new Groups(table);
       setDataTable(result);
-      console.log(result)
     }
-    hanldeOrderBy(dataTable.columns.find(c => c?.sort), false);
-  }, [table])
+    setDataReady(true);
+  }, [table]);
+
+  useEffect(() => {
+    if (dataReady)
+      handleOrderBy(dataTable.columns.find(c => c?.sort), false);
+  }, [dataReady]);
 
   const handleSearchBar = (value) => {
     setFilter({ ...filter, ...{ searchStr: value } })
   }
 
-  const hanldeOrderBy = (column, revers = true) => {
+  const handleOrderBy = (column, revers = true) => {
     if (!column) return;
 
     const newColumns = columns.map(c => {
@@ -41,23 +46,23 @@ function Table({ table }) {
 
     const sort = newColumns.find(c => c.name === column.name).sort;
     setDataTable({ ...dataTable, ...{ columns: newColumns } });
-    setFilter({ ...filter, ...{ orderBy: [column.name, sort] } });
+    setFilter({ ...filter, ...{ orderBy: [column, sort] } });
   }
 
   return (
     <div className="react-table">
       <SearchBar onChange={(value) => handleSearchBar(value)}></SearchBar>
-     
+
       {groups?.length ?
         <GroupsComponent>
           <div style={{ marginLeft: marginGroup }}>
             <Columns>
               {columns.filter(c => c?.isGroup !== false && c?.visible !== false).map((column, i) =>
-                <Column key={i}>{column.name}</Column>
+                <Column key={i} onClickEvn={handleOrderBy} column={column}>{column.name}</Column>
               )}
             </Columns>
           </div>
-          
+
           {groups.map((group, i) =>
             <div key={i}>
               <Group group={group}>
@@ -67,14 +72,26 @@ function Table({ table }) {
                 <>
                   <div style={{ marginLeft: marginGroup }}>
                     <Rows>
-                      {rows.filter(r => r.path === group.path).map((row, i) =>
-                        <Row columns={columns} row={row} key={i} index={i} />
-                      )}
+                      <FilterRows
+                        rows={rows.filter(r => r.path === group.path)}
+                        filter={filter}
+                        result={(rows) =>
+                          rows.map((row, i) =>
+                            <Row columns={columns} row={row} key={i} index={i} />)
+                        }>
+                      </FilterRows>
                     </Rows>
                     <Footer columns={columns}>
                       {columns.map((column, i) =>
                         column?.isGroup !== false && column?.visible !== false ?
-                          <FooterCell column={column} rows={rows.filter(r => r.path === group.path)} key={i}></FooterCell> : ''
+                          <FilterRows
+                            rows={rows.filter(r => r.path === group.path)}
+                            filter={filter}
+                            key={i}
+                            result={(rows, i) =>
+                              <FooterCell column={column} rows={rows} />
+                            }>
+                          </FilterRows> : ''
                       )}
                     </Footer>
                   </div>
@@ -86,8 +103,8 @@ function Table({ table }) {
         :
         <>
           <Columns>
-            {columns.filter(c => c?.isGroup !== false && c?.visible !== false).map((column, i) =>
-              <Column key={i} onClickEvn={hanldeOrderBy} column={column}>
+            {columns.filter(c => c?.visible !== false).map((column, i) =>
+              <Column key={i} onClickEvn={handleOrderBy} column={column}>
                 {column.name}
               </Column>
             )}
