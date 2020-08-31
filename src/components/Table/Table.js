@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
-
+import Utils from '../../Utils/Utils';
 import Groups from '../../Utils/Groups';
 import GroupsComponent from './Groups/Groups';
 import Group from './Groups/Group';
@@ -17,10 +17,11 @@ function Table({ table }) {
   const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
+    calcFormulaRows();
     if (table.groups) {
       const result = new Groups(table);
       setDataTable(result);
-    }
+    }    
     setDataReady(true);
   }, [table]);
 
@@ -28,6 +29,18 @@ function Table({ table }) {
     if (dataReady)
       handleOrderBy(dataTable.columns.find(c => c?.sort), false);
   }, [dataReady]);
+
+  const calcFormulaRows = () => {
+    dataTable.columns.filter(col => col.formula).forEach(column => {
+      dataTable.rows = dataTable.rows.map(row => {
+        let newRow = {}
+        newRow[column.name] = Utils.formula(row, column.formula);
+        return {
+          ...row, ...newRow
+        }
+      });
+    });
+  }
 
   const handleSearchBar = (value) => {
     setFilter({ ...filter, ...{ searchStr: value } })
@@ -64,20 +77,21 @@ function Table({ table }) {
           </div>
 
           {groups.map((group, i) =>
-            <div key={i}>
+            <React.Fragment key={i}>
               <Group group={group}>
                 {group.key}: {group.name}
               </Group>
               {!group.root ?
                 <>
-                  <div style={{ marginLeft: marginGroup }}>
+                  <div className="react-table__group-content" style={{ marginLeft: marginGroup }}>
                     <Rows>
                       <FilterRows
                         rows={rows.filter(r => r.path === group.path)}
                         filter={filter}
                         result={(rows) =>
                           rows.map((row, i) =>
-                            <Row columns={columns} row={row} key={i} index={i} />)
+                            <Row columns={columns} row={row} key={i} index={i} />
+                          )
                         }>
                       </FilterRows>
                     </Rows>
@@ -97,7 +111,7 @@ function Table({ table }) {
                   </div>
                 </>
                 : ''}
-            </div>
+            </React.Fragment>
           )}
         </GroupsComponent>
         :

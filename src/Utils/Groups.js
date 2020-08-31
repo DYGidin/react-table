@@ -147,7 +147,7 @@ class Groups {
     const arr = filterStr.match(this.paramsRegExp);
     if (!arr) return [];
 
-    const children = arr[0].split('=')[1], name = arr[1].split('=')[1];
+    const children = arr[0].split('=')[1];
     if (children === true)
       return rows;
 
@@ -231,24 +231,8 @@ class Groups {
     return { columns, groups: newGroups, rows: newRows }
   }
 
-  /**
-   * Сформировать вычисляемые записи
-   */
-  calcFormulaRows = () => {
-    this.dataTable.columns.filter(col => col.formula).forEach(column => {
-      this.dataTable.rows = this.dataTable.rows.map(row => {
-        let newRow = {}
-        newRow[column.name] = Utils.formula(row, column.formula);
-        return {
-          ...row, ...newRow
-        }
-      });
-    });    
-  }
-
   constructor(dataTable) {
     this.dataTable = dataTable;
-    this.calcFormulaRows();
     const map = this.createMap();
     const tree = this.mapToTree(map);    
     const groups = this.treeToGroups(tree);

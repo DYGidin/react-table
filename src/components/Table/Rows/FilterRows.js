@@ -1,9 +1,8 @@
-function FilterRows({ rows, filter, result }) {
-  const excludeColumns = ['id'];
-
+function FilterRows({ rows, filter, excludeColumns = [], result }) {
+  
   const orderBy = (column, sort = 'asc') => {
     if (!column) return;    
-    const newRows = [...rows].sort((a, b) => {
+    const newRows = [...rows].sort((a, b) => {      
       if (column.type === Number)
         return (sort === 'asc' ?
           parseFloat(a[column.name]) > parseFloat(b[column.name])

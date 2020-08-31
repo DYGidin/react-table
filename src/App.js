@@ -13,6 +13,7 @@ function App() {
     {
       name: 'country',
       title: 'Country',
+      render: (val) => <><box-icon type='solid' name={val === 'Russia' ? 'moon' : 'tree'}></box-icon>{val}</>,
       type: String
     },
     {
@@ -29,12 +30,13 @@ function App() {
     {
       name: 'price',
       title: 'Price',
+      render: (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val),
       type: Number
     },
     {
       name: 'quant',
       title: 'Quant',
-      sort:'asc',
+      sort: 'asc',
       type: Number,
       total: (val) => Utils.sum(val)
     },
@@ -42,6 +44,7 @@ function App() {
       name: 'sum',
       type: Number,
       title: 'Summ',
+      render: (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val),
       formula: '{quant} * {price}',
       total: (val) => Utils.sum(val)
     }],
@@ -56,8 +59,11 @@ function App() {
       { category: 'Electronics', price: 25.4, quant: 12, status: 'processing', name: 'iPhone 5', country: 'Japan' },
       { category: 'Electronics', price: 66.5, quant: 45, status: 'delivery', name: 'Nexus 7', country: 'Japan' },
       { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
-    ],    
-    groups: [ 'category']
+    ],
+    paintRows: [
+      { condition: (val) => val > 10, color: 'red' }
+    ],
+    groups: ['category', 'status']
   }
 
   const [table, setTable] = useState(mock);
