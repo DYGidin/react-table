@@ -61,9 +61,10 @@ function App() {
       { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
     ],
     paintRows: [
-      { condition: (val) => val > 10, color: 'red' }
+      { name: 'quant', condition: (row) => row > 10, background: 'red', color:'white' },
+      { name: 'quant', condition: (row) => row <= 10, background: 'aqua' }
     ],
-    groups: ['category', 'status']
+    //groups: ['category', 'status']
   }
 
   const [table, setTable] = useState(mock);

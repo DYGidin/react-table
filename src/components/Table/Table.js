@@ -20,7 +20,7 @@ function Table({ table }) {
     calcFormulaRows();
     if (table.groups) {
       const result = new Groups(table);
-      setDataTable(result);
+      setDataTable(result);      
     }    
     setDataReady(true);
   }, [table]);
@@ -90,7 +90,7 @@ function Table({ table }) {
                         filter={filter}
                         result={(rows) =>
                           rows.map((row, i) =>
-                            <Row columns={columns} row={row} key={i} index={i} />
+                            <Row paintRows={table.paintRows} columns={columns} row={row} key={i} index={i} />
                           )
                         }>
                       </FilterRows>
@@ -129,7 +129,7 @@ function Table({ table }) {
               filter={filter}
               result={(rows) =>
                 rows.map((row, i) =>
-                  <Row columns={columns} row={row} key={i} index={i} />)
+                  <Row paintRows={dataTable.paintRows} columns={columns} row={row} key={i} index={i} />)
               }>
             </FilterRows>
           </Rows>
