@@ -61,10 +61,60 @@ function App() {
       { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
     ],
     paintRows: [
-      { name: 'quant', condition: (row) => row > 10, background: 'red', color:'white' },
-      { name: 'quant', condition: (row) => row <= 10, background: 'aqua' }
+      {
+        type: 'row',
+        style: {
+          background: 'skyblue',
+          color: 'black',
+        },
+        condition: (row) => row['category'] === 'Electronics'
+      },
+      {
+        type: 'row',
+        style: {
+          background: 'green',
+          color: 'white',
+        },
+        condition: (row) => row['category'] === 'Sporting Goods'
+      },
+      {
+        type: 'row',
+        style: {
+          background: 'yellow',
+          color: 'black',
+        },
+        condition: (row) => row['status'] === 'processing'
+      },
+      {
+        type: 'cell',
+        name: 'sum',
+        style: {
+          background: 'blue',
+          color: 'white',
+        },
+        condition: (row) => parseFloat(row['sum']) < 500
+      },
+      {
+        type: 'cell',
+        name: 'price',
+        style: {
+          background: 'red',
+          color: 'white',
+          fontStyle: 'italic',
+        },
+        condition: (row) => parseFloat(row['price']) === 25
+      },
+      {
+        type: 'cell',
+        name: 'country',
+        style: {
+          background: 'red',
+          color: 'white'
+        },
+        condition: (row) => row['country'] === 'China'
+      }
     ],
-    //groups: ['category', 'status']
+   // groups: ['category', 'status']
   }
 
   const [table, setTable] = useState(mock);

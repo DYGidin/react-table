@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Utils from '../../../Utils/Utils';
 
 function Row({ columns, row, paintRows = [] }) {
+  const [styleRow, setStyleRow] = useState(null);
+  const [styleCell, setStyleCell] = useState([]);
 
   const render = (column, val) => {
     if (!column.render)
@@ -10,30 +12,35 @@ function Row({ columns, row, paintRows = [] }) {
   }
 
   const rowCells = columns.map((column, i) => {
+    let style = {};
+    styleCell.forEach(st => {
+      if (st.name === column.name && row[column.name] === st.value)
+        style = st.style
+    })
+    
     return column?.isGroup !== false && column?.visible !== false ?
-      <div className="react-table__row-cell" key={i} >
+      <div className="react-table__row-cell" key={i} style={style}>
         {column.formula ? render(column, Utils.formula(row, column.formula)) : render(column, row[column.name])}
       </div> : ''
   });
 
-  const [style, setStyle] = useState(null);
+
   useEffect(() => {
-    for (let index = 0; index < columns.length; index++) {
-      const col = columns[index];
-      const rows = paintRows.filter(r => r.name === col.name);
-      for (let j = 0; j < rows.length; j++) {
-        const pRow = rows[j];
-        const { background, color } = pRow.condition(row[pRow.name]) ? pRow : '';
-        if (background) {          
-          setStyle({ background, color })
-          break
-        }
+    setStyleCell([])
+    const arrCell = []
+    paintRows.forEach(rowP => {
+      if (rowP.condition(row) && rowP.type === 'row') {
+        setStyleRow(rowP.style)
       }
-    }   
+      if (rowP.condition(row) && rowP.type === 'cell') {        
+        arrCell.push({ name: rowP.name, value: row[rowP.name], style: rowP.style })        
+        setStyleCell(arrCell)
+      }
+    })    
   }, [row])
 
   return (
-    <div className="react-table__row" style={style}>
+    <div className="react-table__row" style={styleRow}>
       {rowCells}
     </div>
   );
