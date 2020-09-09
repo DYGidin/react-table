@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './App.css';
+import './assets/fonts/boxicons/css/boxicons.min.css'
 import Table from './components/Table/Table';
-import Utils from './Utils/Utils';
-import 'boxicons';
+import Calc from './utils/Calc';
 
 function App() {
   const mock = {
@@ -13,14 +13,14 @@ function App() {
     {
       name: 'country',
       title: 'Country',
-      render: (val) => <><box-icon type='solid' name={val === 'Russia' ? 'moon' : 'tree'}></box-icon>{val}</>,
+      render: (val) => <><i className={val === 'Russia' ? 'bx bx-moon' : 'bx bx-tree'}></i>{val}</>,
       type: String
     },
     {
       name: 'name',
       title: 'Name',
       type: String,
-      total: (val) => Utils.count(val)
+      total: (val) => Calc.count(val)
     },
     {
       name: 'status',
@@ -36,9 +36,9 @@ function App() {
     {
       name: 'quant',
       title: 'Quant',
-      sort: 'asc',
+      sort: 'asc',      
       type: Number,
-      total: (val) => Utils.sum(val)
+      total: (val) => Calc.sum(val)
     },
     {
       name: 'sum',
@@ -46,7 +46,7 @@ function App() {
       title: 'Summ',
       render: (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val),
       formula: '{quant} * {price}',
-      total: (val) => Utils.sum(val)
+      total: (val) => Calc.sum(val)
     }],
     rows: [
       { category: 'Sporting Goods', price: 5, quant: 5, status: 'new', name: 'Football', country: 'USA' },
@@ -96,6 +96,15 @@ function App() {
       },
       {
         type: 'cell',
+        name: 'sum',
+        style: {
+          background: 'aqua',
+          color: 'black',
+        },
+        condition: (row) => parseFloat(row['sum']) >= 500
+      },
+      {
+        type: 'cell',
         name: 'price',
         style: {
           background: 'red',
@@ -114,7 +123,7 @@ function App() {
         condition: (row) => row['country'] === 'China'
       }
     ],
-   // groups: ['category', 'status']
+    groups: ['category', 'status']
   }
 
   const [table, setTable] = useState(mock);

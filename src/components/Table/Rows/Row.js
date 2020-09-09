@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Utils from '../../../Utils/Utils';
+import Calc from '../../../utils/Calc';
 
 function Row({ columns, row, paintRows = [] }) {
   const [styleRow, setStyleRow] = useState(null);
@@ -20,7 +20,7 @@ function Row({ columns, row, paintRows = [] }) {
     
     return column?.isGroup !== false && column?.visible !== false ?
       <div className="react-table__row-cell" key={i} style={style}>
-        {column.formula ? render(column, Utils.formula(row, column.formula)) : render(column, row[column.name])}
+        {column.formula ? render(column, Calc.formula(row, column.formula)) : render(column, row[column.name])}
       </div> : ''
   });
 

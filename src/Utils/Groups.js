@@ -7,11 +7,9 @@
  * Пример: new Groups({groups:dataTable.groups, rows:dataTable.rows});
  * Успешным результатом является массив строк для последующей группировки
  */
-import Utils from './Utils';
+import Calc from './Calc';
 
 class Groups {
-  paramsRegExp = /[^{}]+(?=\})/g;
-
   /**
    * Формирование массива для группировки
    * @param inGroup - группа
@@ -89,7 +87,7 @@ class Groups {
    */
   createGroup = (arr) => {
     if (arr.children && arr.children.key) {
-      const list = Utils.groupBy(this.dataTable.rows, arr.children.key);
+      const list = Calc.groupBy(this.dataTable.rows, arr.children.key);
       const key = arr.children.key;
       const children = arr.children;
       arr.children = []
@@ -115,7 +113,7 @@ class Groups {
    */
   treeToGroups = (tree) => {
     let result = [];
-    const list = Object.keys(Utils.groupBy(this.dataTable.rows, this.dataTable.groups[0]));
+    const list = Object.keys(Calc.groupBy(this.dataTable.rows, this.dataTable.groups[0]));
     list.forEach(g => {
       result.push(this.createGroup(tree.filter(r => r.value === g)[0]))
     });
@@ -171,12 +169,15 @@ class Groups {
    * @param group - группа в виде строки
    */
   getGroupData = (group) => {
+
     const arr = group.match(this.paramsRegExp);
-    return { 
-      key: arr[1].split('=')[0], 
-      name: arr[1].split('=')[1], 
-      root: arr[0].split('=')[1]==='false' ? false : true, 
-      level: arr[arr.length - 1].split('=')[1] }
+    return {
+      key: arr[1].split('=')[0],
+      name: arr[1].split('=')[1],
+      path: [...arr].splice(1, arr.length - 2),
+      root: arr[0].split('=')[1] === 'false' ? false : true,
+      level: arr[arr.length - 1].split('=')[1]
+    }
   }
 
   /**
@@ -191,9 +192,9 @@ class Groups {
     groupsPath.forEach((path, i) => {
       const groupData = this.getGroupData(path);
       let countRows = 0;
-      if (groupData.root === false) {        
+      if (groupData.root === false) {
         countRows = 0;
-        this.filter(rows, path).map((row, i) => {          
+        this.filter(rows, path).map((row, i) => {
           const newRow = row;
           newRow.path = path
           newRows.push(newRow);
@@ -204,17 +205,19 @@ class Groups {
           delete groupsPath[i]
         }
       }
-      
+
       newGroups.push({
         path: path,
         key: groupData.key,
         name: groupData.name,
         root: groupData.root,
         level: groupData.level,
+        visible: true,
+        open: true,
       });
 
     });
-   
+
     newGroups = newGroups.map((group) => {
       return {
         childrenCount: this.filter(rows, group.path).length, ...group
@@ -231,14 +234,18 @@ class Groups {
     return { columns, groups: newGroups, rows: newRows }
   }
 
-  constructor(dataTable) {
+  create(dataTable) {
     this.dataTable = dataTable;
     const map = this.createMap();
-    const tree = this.mapToTree(map);    
+    const tree = this.mapToTree(map);
     const groups = this.treeToGroups(tree);
-    const paths = this.groupsToPath(groups);        
-    const result = this.getGroups(paths, this.dataTable);    
+    const paths = this.groupsToPath(groups);
+    const result = this.getGroups(paths, this.dataTable);
     return result;
+  }
+
+  constructor() {
+    this.paramsRegExp = /[^{}]+(?=\})/g;
   }
 }
 

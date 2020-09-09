@@ -1,4 +1,4 @@
-const Utils = {
+const Calc = {
   sum: (val) => val.reduce((acc, val) => parseFloat(acc) + parseFloat(val), 0),
   count: (val) => val.reduce((acc, val) => parseFloat(acc) + 1, 0),
   max: (val) => val.reduce((acc, val) => Math.max(acc, val)),
@@ -35,4 +35,4 @@ const Utils = {
   )
 }
 
-export default Utils;
+export default Calc;

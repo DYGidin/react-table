@@ -4,7 +4,7 @@ function Column(props) {
   return (
     <div className="react-table__column" onClick={() => onClickEvn ? onClickEvn(column) : null}>
       <a className="react-table__column-link">{children}</a>
-      {column?.sort ? <box-icon name={column.sort === 'asc' ? 'sort-up' : 'sort-down'}></box-icon> : ''}
+      {column?.sort ? <i className={column.sort === 'asc' ? 'bx bx-sort-up' : 'bx bx-sort-down'}></i> : ''}
     </div>
   );
 }
