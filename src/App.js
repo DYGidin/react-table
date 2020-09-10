@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import './assets/fonts/boxicons/css/boxicons.min.css'
-import Table from './components/Table/Table';
+import Table from './components/Table';
 import Calc from './utils/Calc';
 
 function App() {
@@ -123,6 +123,7 @@ function App() {
         condition: (row) => row['country'] === 'China'
       }
     ],
+    //filter:{searchStr:'Jap'},
     groups: ['category', 'status']
   }
 

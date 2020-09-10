@@ -1,5 +1,5 @@
 import React from 'react';
-function Columns({children}) {
+function Columns({ children }) {
   return (
     <div className="react-table__columns">
       {children}

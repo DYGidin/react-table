@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Calc from '../../../utils/Calc';
+import Calc from '../../utils/Calc';
 
 function Row({ columns, row, paintRows = [] }) {
   const [styleRow, setStyleRow] = useState(null);

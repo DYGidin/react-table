@@ -1,5 +1,5 @@
 import React from 'react';
-import Calc from '../../../utils/Calc';
+import Calc from '../../utils/Calc';
 
 function FooterCell({ column, rows }) {
   const total = () => {
