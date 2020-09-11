@@ -1,5 +1,4 @@
-function FilterRows({ rows, filter, excludeColumns = [], result }) {
-  
+function FilterRows({ rows, filter, excludeColumns = [], result }) {  
   const orderBy = (column, sort = 'asc') => {
     if (!column) return;    
     const newRows = [...rows].sort((a, b) => {      

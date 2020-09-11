@@ -18,7 +18,7 @@ function Row({ columns, row, paintRows = [] }) {
         style = st.style
     })
     
-    return column?.isGroup !== false && column?.visible !== false ?
+    return !column?.isGroup  && column?.visible !== false ?
       <div className="react-table__row-cell" key={i} style={style}>
         {column.formula ? render(column, Calc.formula(row, column.formula)) : render(column, row[column.name])}
       </div> : ''

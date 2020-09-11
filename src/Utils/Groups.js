@@ -227,7 +227,7 @@ class Groups {
     newGroups = newGroups.filter(g => g.childrenCount !== 0);
     columns = columns.map((column) => {
       return {
-        isGroup: newGroups.filter(g => g.key === column.name).length ? false : true,
+        isGroup: newGroups.filter(g => g.key === column.name).length ? true : false,
         ...column
       }
     });

@@ -36,7 +36,7 @@ function App() {
     {
       name: 'quant',
       title: 'Quant',
-      sort: 'asc',      
+      sort: 'asc',
       type: Number,
       total: (val) => Calc.sum(val)
     },
@@ -53,6 +53,7 @@ function App() {
       { category: 'Sporting Goods', price: 80, quant: 50, status: 'new', name: 'Aikido', country: 'Japan' },
       { category: 'Sporting Goods', price: 35, quant: 5, status: 'delivery', name: 'Baseball', country: 'USA' },
       { category: 'Sporting Goods', price: 66.5, quant: 20, status: 'processing', name: 'Basketball', country: 'USA' },
+      { category: 'Sporting Goods', price: 66.5, quant: 20, status: 'return', name: 'Hockey', country: 'Russia' },
       { category: 'Electronics', price: 25, quant: 10, status: 'delivery', name: 'Asus', country: 'China' },
       { category: 'Electronics', price: 20, quant: 3, status: 'delivery', name: 'Blackberry', country: 'China' },
       { category: 'Electronics', price: 45.5, quant: 12, status: 'processing', name: 'iPod Touch', country: 'Japan' },
@@ -123,7 +124,7 @@ function App() {
         condition: (row) => row['country'] === 'China'
       }
     ],
-    //filter:{searchStr:'Jap'},
+    //filter: { searchStr: 'Jap' },
     groups: ['category', 'status']
   }
 

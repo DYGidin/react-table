@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useReducer } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -8,75 +8,89 @@ import GroupsComponent from './Groups/Groups';
 import Group from './Groups/Group';
 import SearchBar from './SearchBar/SearchBar';
 import { Context } from './context'
+import reducer from './reducer';
 import '../assets/css/style.css';
 function Table({ table }) {
-
-  const [dataTable, setDataTable] = useState(table);
-  const [filter, setFilter] = useState(table.filter || null);
-  const [dataReady, setDataReady] = useState(false);
-  const [moveColumn, setMoveColumn] = useState(null);
-  const [mouseDown, setMouseDown] = useState(false);
-  const { columns, groups, rows } = dataTable || [];
-  const marginGroup = columns.filter(col => col.isGroup === false).length * 20;
+  const [state, dispatch] = useReducer(reducer, table);
+  const { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
+  const marginGroup = columns.filter(col => col.isGroup === true).length * 20;
 
   useEffect(() => {
     calcFormulaRows();
     if (table.groups) {
       const result = new Groups().create(table)
-      setDataTable(result);
+      dispatch({ type: 'set-data', payload: result })
     }
-    setDataReady(true);
-    document.addEventListener('mouseup', () => {
-      setMouseDown(false);
-      setMoveColumn(null);
-
-    });
-
+    dispatch({ type: 'ready', payload: true })
   }, [table]);
 
   useEffect(() => {
-    if (dataReady)
-      handleOrderBy(dataTable.columns.find(c => c?.sort), false);
-
-
-  }, [dataReady]);
-
+    if (ready) {
+      handleOrderBy(columns.find(c => c?.sort), false);
+      document.addEventListener('mouseup', () => {
+        dispatch({ type: 'mouse-down', payload: false })
+      });
+    }
+  }, [ready]);
 
   useEffect(() => {
     if (mouseDown)
       document.addEventListener('mousemove', move)
+    else
+      dispatch({ type: 'move-column', payload: null })
 
-
-    return () => {
-      document.removeEventListener('mousemove', move)
-    }
+    return () => document.removeEventListener('mousemove', move)
   }, [mouseDown])
-
-
-
 
   const move = e => {
     e.preventDefault();
-    const mstyle = moveColumn.style;
+    const style = moveColumn.style;
     const { offsetX, offsetY } = offset.current;
-    setMoveColumn({ ...moveColumn, ...{ style: { ...mstyle, ...{ left: (e.pageX - offsetX) + 'px', top: (e.pageY - offsetY) + 'px' } } } })
+    const { scrollX, scrollY } = window;
+    const position = {
+      display: 'initial',
+      left: (e.pageX - offsetX - scrollX),
+      top: (e.pageY - offsetY - scrollY)
+    }
+    console.log(columns)
+    columns.forEach(col => {
+      const { left, right, top, bottom, width } = col.el.getBoundingClientRect();
+
+      if (position.left > left && position.left < left + width && moveColumn.name !== col.name && !col?.isGroup)
+        console.log(col.name)
+    })
+    dispatch({
+      type: 'move-column',
+      payload: { ...moveColumn, ...{ style: { ...style, ...position } } }
+    })
   }
+
   const offset = useRef();
-  const handeMouseDown = ({ column, el, e }) => {
+  const handeMouseDown = ({ column, el, event }) => {
     const { left, top, width, height } = el.current.getBoundingClientRect();
 
     offset.current = {
-      offsetX: e.clientX - left,
-      offsetY: e.clientY - top
+      offsetX: event.clientX - left,
+      offsetY: event.clientY - top
     }
 
-    setMoveColumn({ ...column, ...{ style: { left, top, width, height, position: 'fixed', zIndex: 9999 } } });
-    setMouseDown(true)
+    const style = {
+      display: 'none',
+      left,
+      top,
+      width,
+      height,
+      position: 'fixed',
+      zIndex: 9999
+    }
+
+    dispatch({ type: 'move-column', payload: { ...column, ...{ style } } })
+    dispatch({ type: 'mouse-down', payload: true })
   }
 
   const calcFormulaRows = () => {
-    dataTable.columns.filter(col => col.formula).forEach(column => {
-      dataTable.rows = dataTable.rows.map(row => {
+    columns.filter(col => col.formula).forEach(column => {
+      rows.map(row => {
         let newRow = {}
         newRow[column.name] = Calc.formula(row, column.formula);
         return {
@@ -87,7 +101,10 @@ function Table({ table }) {
   }
 
   const handleSearchBar = (value) => {
-    setFilter({ ...filter, ...{ searchStr: value } })
+    dispatch({
+      type: 'set-data',
+      payload: { filter: { ...filter, ...{ searchStr: value } } }
+    })
   }
 
   const handleOrderBy = (column, revers = true) => {
@@ -102,8 +119,10 @@ function Table({ table }) {
     });
 
     const sort = newColumns.find(c => c.name === column.name).sort;
-    setDataTable({ ...dataTable, ...{ columns: newColumns } });
-    setFilter({ ...filter, ...{ orderBy: [column, sort] } });
+    dispatch({
+      type: 'set-data',
+      payload: { columns: newColumns, filter: { ...filter, ...{ orderBy: [column, sort] } } }
+    })
   }
 
   const handleOpenClose = ({ group, open }) => {
@@ -117,14 +136,14 @@ function Table({ table }) {
       else
         return g
     });
-
-    setDataTable({ ...dataTable, ...{ groups: newGroups } });
+    dispatch({
+      type: 'set-data',
+      payload: { groups: newGroups }
+    })
   }
 
-
-
   return (
-    <Context.Provider value={{ handeMouseDown }}>
+    <Context.Provider value={{ handeMouseDown, dispatch }}>
       <div className="react-table">
         {moveColumn &&
           <div className="column-move" style={moveColumn?.style}>
@@ -132,13 +151,13 @@ function Table({ table }) {
           </div>
         }
         <SearchBar
-          onChange={useCallback(value => handleSearchBar(value), [])}
+          onChange={useCallback(value => handleSearchBar(value), [filter])}
           value={filter?.searchStr}></SearchBar>
         {groups?.length ?
           <GroupsComponent>
             <div style={{ marginLeft: marginGroup }}>
               <Columns>
-                {columns.filter(c => c?.isGroup !== false && c?.visible !== false).map((column, i) =>
+                {columns.filter(c => c?.isGroup === false && c?.visible !== false).map((column, i) =>
                   <Column
                     key={i}
                     onClickEvn={handleOrderBy}
@@ -163,14 +182,14 @@ function Table({ table }) {
                           filter={filter}
                           result={(rows) =>
                             rows.map((row, i) =>
-                              <Row paintRows={table.paintRows} columns={columns} row={row} key={i} index={i} />
+                              <Row paintRows={paintRows} columns={columns} row={row} key={i} index={i} />
                             )
                           }>
                         </FilterRows>
                       </Rows>
                       <Footer columns={columns}>
                         {columns.map((column, i) =>
-                          column?.isGroup && column?.visible !== false &&
+                          !column?.isGroup && column?.visible !== false &&
                           <FilterRows
                             rows={rows.filter(r => r.path === group.path)}
                             filter={filter}
@@ -201,7 +220,7 @@ function Table({ table }) {
                 filter={filter}
                 result={(rows) =>
                   rows.map((row, i) =>
-                    <Row paintRows={dataTable.paintRows} columns={columns} row={row} key={i} index={i} />)
+                    <Row paintRows={paintRows} columns={columns} row={row} key={i} index={i} />)
                 }>
               </FilterRows>
             </Rows>
