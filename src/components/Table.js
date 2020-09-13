@@ -11,7 +11,7 @@ import { Context } from './context'
 import reducer from './reducer';
 import '../assets/css/style.css';
 function Table({ table }) {
-  console.log(1)
+
   const [state, dispatch] = useReducer(reducer, table);
   const { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
   const marginGroup = columns.filter(col => col.isGroup === true).length * 20;
@@ -28,9 +28,6 @@ function Table({ table }) {
   useEffect(() => {
     if (ready) {
       handleOrderBy(columns.find(c => c?.sort), false);
-      document.addEventListener('mouseup', () => {
-        dispatch({ type: 'mouse-down', payload: false })
-      });
     }
   }, [ready]);
 
@@ -174,7 +171,7 @@ function Table({ table }) {
   }
 
   return (
-    // <Context.Provider value={{ handeMouseDown, dispatch, state }}>
+    <Context.Provider value={{ handeMouseDown, dispatch, state }}>
       <div className="react-table">
         {moveColumn &&
           <div className="column-move" style={moveColumn?.style}>
@@ -269,8 +266,11 @@ function Table({ table }) {
           </>
         }
       </div>
-    // </Context.Provider>
+    </Context.Provider>
   );
 }
 
-export default React.memo(Table)
+export default React.memo(Table, (prevProps, nextProps) => {
+  console.log(prevProps.table)
+ return prevProps.filter &&  prevProps.filter === nextProps.filter ? true : false
+});
