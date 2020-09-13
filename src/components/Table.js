@@ -11,6 +11,7 @@ import { Context } from './context'
 import reducer from './reducer';
 import '../assets/css/style.css';
 function Table({ table }) {
+  console.log(1)
   const [state, dispatch] = useReducer(reducer, table);
   const { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
   const marginGroup = columns.filter(col => col.isGroup === true).length * 20;
@@ -34,10 +35,21 @@ function Table({ table }) {
   }, [ready]);
 
   useEffect(() => {
-    if (mouseDown)
+    if (mouseDown) {
       document.addEventListener('mousemove', move)
-    else
+    } else {
+      columns.forEach(col => {
+        dispatch({
+          type: 'set-column',
+          payload: {
+            column: col,
+            key: 'className',
+            value: ''
+          }
+        })
+      });
       dispatch({ type: 'move-column', payload: null })
+    }
 
     return () => document.removeEventListener('mousemove', move)
   }, [mouseDown])
@@ -52,12 +64,31 @@ function Table({ table }) {
       left: (e.pageX - offsetX - scrollX),
       top: (e.pageY - offsetY - scrollY)
     }
-    console.log(columns)
+
     columns.forEach(col => {
       const { left, right, top, bottom, width } = col.el.getBoundingClientRect();
 
-      if (position.left > left && position.left < left + width && moveColumn.name !== col.name && !col?.isGroup)
-        console.log(col.name)
+      if (position.left > left
+        && position.left < left + width && moveColumn.name !== col.name && !col?.isGroup) {
+        dispatch({
+          type: 'set-column',
+          payload: {
+            column: col,
+            key: 'className',
+            value: 'hover'
+          }
+        })
+
+      } else {
+        dispatch({
+          type: 'set-column',
+          payload: {
+            column: col,
+            key: 'className',
+            value: ''
+          }
+        })
+      }
     })
     dispatch({
       type: 'move-column',
@@ -143,7 +174,7 @@ function Table({ table }) {
   }
 
   return (
-    <Context.Provider value={{ handeMouseDown, dispatch }}>
+    // <Context.Provider value={{ handeMouseDown, dispatch, state }}>
       <div className="react-table">
         {moveColumn &&
           <div className="column-move" style={moveColumn?.style}>
@@ -157,11 +188,10 @@ function Table({ table }) {
           <GroupsComponent>
             <div style={{ marginLeft: marginGroup }}>
               <Columns>
-                {columns.filter(c => c?.isGroup === false && c?.visible !== false).map((column, i) =>
+                {columns.filter(c => !c?.isGroup && c?.visible !== false).map((column, i) =>
                   <Column
                     key={i}
                     onClickEvn={handleOrderBy}
-                    mouseDown={handeMouseDown}
                     column={column}>{column.name}</Column>
                 )}
               </Columns>
@@ -239,8 +269,8 @@ function Table({ table }) {
           </>
         }
       </div>
-    </Context.Provider>
+    // </Context.Provider>
   );
 }
 
-export default Table;
+export default React.memo(Table)

@@ -1,7 +1,8 @@
-function FilterRows({ rows, filter, excludeColumns = [], result }) {  
+import React from 'react'
+function FilterRows({ rows, filter, excludeColumns = [], result }) {
   const orderBy = (column, sort = 'asc') => {
-    if (!column) return;    
-    const newRows = [...rows].sort((a, b) => {      
+    if (!column) return;
+    const newRows = [...rows].sort((a, b) => {
       if (column.type === Number)
         return (sort === 'asc' ?
           parseFloat(a[column.name]) > parseFloat(b[column.name])
@@ -37,4 +38,6 @@ function FilterRows({ rows, filter, excludeColumns = [], result }) {
 
   return (result(filterData()))
 }
-export default FilterRows;
+export default React.memo(FilterRows, (prevProps, nextProps) => {  
+  return prevProps.filter &&  prevProps.filter === nextProps.filter ? true : false
+});

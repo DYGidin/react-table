@@ -8,4 +8,4 @@ function Rows(props) {
     </div>
   )
 }
-export default Rows;
+export default React.memo(Rows);

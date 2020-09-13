@@ -5,6 +5,7 @@ import Table from './components/Table';
 import Calc from './utils/Calc';
 
 function App() {
+
   const mock = {
     columns: [{
       name: 'category',

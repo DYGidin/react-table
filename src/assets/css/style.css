@@ -16,6 +16,10 @@
   background: #fcfcfc;
 }
 
+.react-table__column.hover {
+  background: #cccccc;
+}
+
 .react-table__column {
   cursor: pointer;
   padding: 5px;

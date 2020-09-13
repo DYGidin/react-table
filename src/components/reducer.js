@@ -11,7 +11,7 @@ export default function (state, action) {
     case 'set-column':
       state.columns = state.columns.map(col => {
         if (col.name === action.payload.column.name) {
-          col.el = action.payload.el
+          col[action.payload.key] = action.payload.value
         }
         return col
       })

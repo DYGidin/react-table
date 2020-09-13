@@ -46,4 +46,4 @@ function Row({ columns, row, paintRows = [] }) {
   );
 }
 
-export default Row;
+export default React.memo(Row);
