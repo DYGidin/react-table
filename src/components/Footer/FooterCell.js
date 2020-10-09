@@ -4,9 +4,8 @@ import Calc from '../../utils/Calc';
 function FooterCell({ column, rows }) {
   const total = () => {
     const res = column.total(
-      rows.map(r => {
-        const result = column.formula ? Calc.formula(r, column.formula) : r[column.name];
-        return result
+      rows.map(r => {        
+        return r[column.name]
       }))
     return column.render ? column.render(res) : res;
   }

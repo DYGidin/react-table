@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import Calc from '../../utils/Calc';
 
 function Row({ columns, row, paintRows = [] }) {
   const [styleRow, setStyleRow] = useState(null);
   const [styleCell, setStyleCell] = useState([]);
-
+  //console.log('row render')
   const render = (column, val) => {
     if (!column.render)
       return val;
@@ -20,7 +19,7 @@ function Row({ columns, row, paintRows = [] }) {
     
     return !column?.isGroup  && column?.visible !== false ?
       <div className="react-table__row-cell" key={i} style={style}>
-        {column.formula ? render(column, Calc.formula(row, column.formula)) : render(column, row[column.name])}
+        {render(column, row[column.name])}
       </div> : ''
   });
 
@@ -47,3 +46,4 @@ function Row({ columns, row, paintRows = [] }) {
 }
 
 export default React.memo(Row);
+

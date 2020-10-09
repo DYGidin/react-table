@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useReducer } from 'react';
+import React, { useMemo, useEffect, useCallback, useRef, useReducer } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -13,11 +13,11 @@ import '../assets/css/style.css';
 function Table({ table }) {
 
   const [state, dispatch] = useReducer(reducer, table);
-  const { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
-  const marginGroup = columns.filter(col => col.isGroup === true).length * 20;
+  let { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
+  const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
 
   useEffect(() => {
-    calcFormulaRows();
+    dispatch({ type: 'calc-formula' })
     if (table.groups) {
       const result = new Groups().create(table)
       dispatch({ type: 'set-data', payload: result })
@@ -116,16 +116,13 @@ function Table({ table }) {
     dispatch({ type: 'mouse-down', payload: true })
   }
 
-  const calcFormulaRows = () => {
-    columns.filter(col => col.formula).forEach(column => {
-      rows.map(row => {
-        let newRow = {}
-        newRow[column.name] = Calc.formula(row, column.formula);
-        return {
-          ...row, ...newRow
-        }
-      });
-    });
+  const handleMouseUp = (column) => {
+    if (!moveColumn) return;
+    dispatch({ type: 'mouse-up', payload: column });
+    dispatch({
+      type: 'set-data',
+      payload: { filter: { ...filter } }
+    })
   }
 
   const handleSearchBar = (value) => {
@@ -147,6 +144,7 @@ function Table({ table }) {
     });
 
     const sort = newColumns.find(c => c.name === column.name).sort;
+
     dispatch({
       type: 'set-data',
       payload: { columns: newColumns, filter: { ...filter, ...{ orderBy: [column, sort] } } }
@@ -171,7 +169,7 @@ function Table({ table }) {
   }
 
   return (
-    <Context.Provider value={{ handeMouseDown, dispatch, state }}>
+    <Context.Provider value={{ handeMouseDown, handleMouseUp, handleOrderBy, dispatch, state }}>
       <div className="react-table">
         {moveColumn &&
           <div className="column-move" style={moveColumn?.style}>
@@ -179,7 +177,7 @@ function Table({ table }) {
           </div>
         }
         <SearchBar
-          onChange={useCallback(value => handleSearchBar(value), [filter])}
+          onChange={value => handleSearchBar(value)}
           value={filter?.searchStr}></SearchBar>
         {groups?.length ?
           <GroupsComponent>
@@ -188,7 +186,6 @@ function Table({ table }) {
                 {columns.filter(c => !c?.isGroup && c?.visible !== false).map((column, i) =>
                   <Column
                     key={i}
-                    onClickEvn={handleOrderBy}
                     column={column}>{column.name}</Column>
                 )}
               </Columns>
@@ -236,7 +233,9 @@ function Table({ table }) {
           <>
             <Columns>
               {columns.filter(c => c?.visible !== false).map((column, i) =>
-                <Column key={i} onClickEvn={handleOrderBy} column={column}>
+                <Column
+                  key={i}
+                  column={column}>
                   {column.name}
                 </Column>
               )}
@@ -270,7 +269,7 @@ function Table({ table }) {
   );
 }
 
-export default React.memo(Table, (prevProps, nextProps) => {
-  console.log(prevProps.table)
- return prevProps.filter &&  prevProps.filter === nextProps.filter ? true : false
-});
+export default Table;
+// React.memo(Table, (prevProps, nextProps) => {
+//  return prevProps.filter &&  prevProps.filter === nextProps.filter ? true : false
+// });
