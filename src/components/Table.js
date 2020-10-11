@@ -1,8 +1,8 @@
-import React, { useMemo, useEffect, useCallback, useRef, useReducer } from 'react';
+import React, { useMemo, useEffect, useCallback, useRef, useReducer, useState } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
-import Calc from '../utils/Calc';
+
 import Groups from '../utils/Groups';
 import GroupsComponent from './Groups/Groups';
 import Group from './Groups/Group';
@@ -10,10 +10,16 @@ import SearchBar from './SearchBar/SearchBar';
 import { Context } from './context'
 import reducer from './reducer';
 import '../assets/css/style.css';
+
+import MoveComponent from './MoveComponent/MoveComponent';
+import GroupListItem from './Groups/GroupListItem';
+
+
 function Table({ table }) {
 
   const [state, dispatch] = useReducer(reducer, table);
-  let { columns, groups, rows, filter, paintRows, ready, mouseDown, moveColumn } = state || null;
+
+  let { columns, groups, rows, filter, paintRows, ready, moveColumn, hoverColumn, groupsList } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
 
   useEffect(() => {
@@ -22,6 +28,15 @@ function Table({ table }) {
       const result = new Groups().create(table)
       dispatch({ type: 'set-data', payload: result })
     }
+
+    const list = []
+    table.groups.forEach(g => {
+      const c = columns.find(c => c.name === g);
+      list.push({ name: c.name })
+    })
+
+    dispatch({ type: 'set-grouplist', payload: list })
+
     dispatch({ type: 'ready', payload: true })
   }, [table]);
 
@@ -31,98 +46,51 @@ function Table({ table }) {
     }
   }, [ready]);
 
-  useEffect(() => {
-    if (mouseDown) {
-      document.addEventListener('mousemove', move)
-    } else {
-      columns.forEach(col => {
+  const handleMoveStart = (columnName) => {
+    dispatch({ type: 'mouse-down', payload: true });
+    dispatch({ type: 'move-column', payload: columnName });
+  }
+
+  const handleMove = (position) => {
+    columns.forEach(column => {
+      if (column?.isGroup === false) {
+        const { left, top, height, width } = column.position;
+        if (
+          position.left + position.width > (left + (width / 2))
+          && position.left + (position.width / 2) < left + width
+          && position.top + position.height > (top + (height / 2))
+          && position.top + (position.height / 2) < top + height
+        ) {
+          dispatch({
+            type: 'set-hover',
+            payload: column.name
+          })
+        }
+      }
+    });
+
+    groupsList.forEach(group => {
+      const { left, top, height, width } = group.position;
+      if (
+        position.left + position.width > (left + (width / 2))
+        && position.left + (position.width / 2) < left + width
+        && position.top + position.height > (top + (height / 2))
+        && position.top + (position.height / 2) < top + height
+      ) {
         dispatch({
-          type: 'set-column',
-          payload: {
-            column: col,
-            key: 'className',
-            value: ''
-          }
-        })
-      });
-      dispatch({ type: 'move-column', payload: null })
-    }
-
-    return () => document.removeEventListener('mousemove', move)
-  }, [mouseDown])
-
-  const move = e => {
-    e.preventDefault();
-    const style = moveColumn.style;
-    const { offsetX, offsetY } = offset.current;
-    const { scrollX, scrollY } = window;
-    const position = {
-      display: 'initial',
-      left: (e.pageX - offsetX - scrollX),
-      top: (e.pageY - offsetY - scrollY)
-    }
-
-    columns.forEach(col => {
-      const { left, right, top, bottom, width } = col.el.getBoundingClientRect();
-
-      if (position.left > left
-        && position.left < left + width && moveColumn.name !== col.name && !col?.isGroup) {
-        dispatch({
-          type: 'set-column',
-          payload: {
-            column: col,
-            key: 'className',
-            value: 'hover'
-          }
-        })
-
-      } else {
-        dispatch({
-          type: 'set-column',
-          payload: {
-            column: col,
-            key: 'className',
-            value: ''
-          }
+          type: 'set-hover',
+          payload: group.name
         })
       }
-    })
-    dispatch({
-      type: 'move-column',
-      payload: { ...moveColumn, ...{ style: { ...style, ...position } } }
-    })
+    });
   }
 
-  const offset = useRef();
-  const handeMouseDown = ({ column, el, event }) => {
-    const { left, top, width, height } = el.current.getBoundingClientRect();
-
-    offset.current = {
-      offsetX: event.clientX - left,
-      offsetY: event.clientY - top
-    }
-
-    const style = {
-      display: 'none',
-      left,
-      top,
-      width,
-      height,
-      position: 'fixed',
-      zIndex: 9999
-    }
-
-    dispatch({ type: 'move-column', payload: { ...column, ...{ style } } })
-    dispatch({ type: 'mouse-down', payload: true })
-  }
-
-  const handleMouseUp = (column) => {
-    if (!moveColumn) return;
-    dispatch({ type: 'mouse-up', payload: column });
-    dispatch({
-      type: 'set-data',
-      payload: { filter: { ...filter } }
-    })
+  const handleMoveStop = () => {
+    dispatch({ type: 'mouse-up', payload: moveColumn });
+    dispatch({ type: 'mouse-down', payload: false });
+    dispatch({ type: 'set-hover', payload: '' });
+    dispatch({ type: 'move-column', payload: '' });
+    dispatch({ type: 'set-data', payload: { filter: { ...filter } } });
   }
 
   const handleSearchBar = (value) => {
@@ -169,13 +137,24 @@ function Table({ table }) {
   }
 
   return (
-    <Context.Provider value={{ handeMouseDown, handleMouseUp, handleOrderBy, dispatch, state }}>
+    <Context.Provider value={{ handleOrderBy, dispatch, state }}>
       <div className="react-table">
-        {moveColumn &&
-          <div className="column-move" style={moveColumn?.style}>
-            <Column column={moveColumn}>{moveColumn.name}</Column>
-          </div>
-        }
+        <ul className="react-table__groups-list">
+          {groupsList &&
+            groupsList.map((group, i) =>
+              <MoveComponent
+                key={i}
+                handleMoveStart={() => handleMoveStart(group.name)}
+                handleMoveStop={handleMoveStop}
+                handleMove={handleMove}>
+                <GroupListItem
+                  key={i}
+                  hoverColumn={hoverColumn}
+                  column={group}>{group.name}</GroupListItem>
+              </MoveComponent>
+            )
+          }
+        </ul>
         <SearchBar
           onChange={value => handleSearchBar(value)}
           value={filter?.searchStr}></SearchBar>
@@ -184,9 +163,17 @@ function Table({ table }) {
             <div style={{ marginLeft: marginGroup }}>
               <Columns>
                 {columns.filter(c => !c?.isGroup && c?.visible !== false).map((column, i) =>
-                  <Column
+                  <MoveComponent
                     key={i}
-                    column={column}>{column.name}</Column>
+                    handleMoveStart={() => handleMoveStart(column.name)}
+                    handleMoveStop={handleMoveStop}
+                    handleMove={handleMove}
+                  >
+                    <Column
+                      key={i}
+                      hoverColumn={hoverColumn}
+                      column={column}>{column.name}</Column>
+                  </MoveComponent>
                 )}
               </Columns>
             </div>

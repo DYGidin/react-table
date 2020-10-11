@@ -92,3 +92,15 @@
 .group-name__open-close {
   cursor: pointer;
 }
+
+.react-table__groups-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+.react-table__groups-list li + li {
+  margin-left: 10px;
+}

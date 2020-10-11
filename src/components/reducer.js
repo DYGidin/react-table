@@ -23,9 +23,9 @@ export default function (state, action) {
       if (!state.mouseDown)
         return { ...state, mouseDown: false };
 
-      const newIndex = state.columns.indexOf(state.columns.find(c => c?.className === 'hover'));
-      const oldIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload.name));
-      
+      const newIndex = state.columns.indexOf(state.columns.find(c => c.name === state.hoverColumn));
+      const oldIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload));
+
       if (newIndex === -1)
         return { ...state, mouseDown: false };
 
@@ -44,15 +44,33 @@ export default function (state, action) {
         });
       });
       return { ...state };
-    case 'set-column':
-      state.hoverColumn = null;
+    case 'set-column-postion':
       state.columns = state.columns.map(col => {
-        if (col.name === action.payload.column.name) {
-          col[action.payload.key] = action.payload.value
+        if (col.name === action.payload.name) {
+          col.position = action.payload.position
         }
         return col
       })
       return state;
+    case 'set-grouplist':
+      return { ...state, groupsList: action.payload }
+    case 'set-group-position':
+      state.groupsList = state.groupsList.map(group => {        
+        if (group.name === action.payload.name) {
+          group.position = action.payload.position
+        }
+        return group
+      })
+      
+      return state;
+    case 'set-hover':
+      state.hoverColumn = '';
+      state.columns.forEach(col => {
+        if (col.name === action.payload) {
+          state.hoverColumn = col.name
+        }
+      })
+      return { ...state };
     default:
       return state;
   }
