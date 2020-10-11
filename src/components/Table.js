@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback, useRef, useReducer, useState } from 'react';
+import React, { useMemo, useEffect, useReducer } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -26,16 +26,15 @@ function Table({ table }) {
     dispatch({ type: 'calc-formula' })
     if (table.groups) {
       const result = new Groups().create(table)
-      dispatch({ type: 'set-data', payload: result })
+      dispatch({ type: 'set-data', payload: result });
+      const list = []
+      table.groups.forEach(g => {
+        const c = columns.find(c => c.name === g);
+        list.push({ name: c.name })
+      })
+
+      dispatch({ type: 'set-grouplist', payload: list })
     }
-
-    const list = []
-    table.groups.forEach(g => {
-      const c = columns.find(c => c.name === g);
-      list.push({ name: c.name })
-    })
-
-    dispatch({ type: 'set-grouplist', payload: list })
 
     dispatch({ type: 'ready', payload: true })
   }, [table]);
@@ -53,14 +52,16 @@ function Table({ table }) {
 
   const handleMove = (position) => {
     columns.forEach(column => {
-      if (column?.isGroup === false) {
+      
+      if (!column?.isGroup) {
+        
         const { left, top, height, width } = column.position;
         if (
           position.left + position.width > (left + (width / 2))
           && position.left + (position.width / 2) < left + width
           && position.top + position.height > (top + (height / 2))
           && position.top + (position.height / 2) < top + height
-        ) {
+        ) {          
           dispatch({
             type: 'set-hover',
             payload: column.name
@@ -69,20 +70,23 @@ function Table({ table }) {
       }
     });
 
-    groupsList.forEach(group => {
-      const { left, top, height, width } = group.position;
-      if (
-        position.left + position.width > (left + (width / 2))
-        && position.left + (position.width / 2) < left + width
-        && position.top + position.height > (top + (height / 2))
-        && position.top + (position.height / 2) < top + height
-      ) {
-        dispatch({
-          type: 'set-hover',
-          payload: group.name
-        })
-      }
-    });
+    if (groupsList && groupsList.length) {
+      groupsList.forEach(group => {
+        const { left, top, height, width } = group.position;
+        if (
+          position.left + position.width > (left + (width / 2))
+          && position.left + (position.width / 2) < left + width
+          && position.top + position.height > (top + (height / 2))
+          && position.top + (position.height / 2) < top + height
+        ) {
+          dispatch({
+            type: 'set-hover',
+            payload: group.name
+          })
+        }
+      });
+    }
+
   }
 
   const handleMoveStop = () => {
@@ -220,11 +224,19 @@ function Table({ table }) {
           <>
             <Columns>
               {columns.filter(c => c?.visible !== false).map((column, i) =>
-                <Column
+                <MoveComponent
                   key={i}
-                  column={column}>
-                  {column.name}
-                </Column>
+                  handleMoveStart={() => handleMoveStart(column.name)}
+                  handleMoveStop={handleMoveStop}
+                  handleMove={handleMove}
+                >
+                  <Column
+                    key={i}
+                    hoverColumn={hoverColumn}
+                    column={column}>
+                    {column.name}
+                  </Column>
+                </MoveComponent>
               )}
             </Columns>
             <Rows>
