@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useContext, useState } from 'react';
 import { Context } from '../context';
 function Column(props) {
-  const { children, column, hoverColumn } = props;
+  const { children, column, hoverElement } = props;
   const { handleOrderBy, dispatch, state } = useContext(Context);
   const el = useRef();
  
@@ -11,7 +11,7 @@ function Column(props) {
 
   return (
     <div ref={el}
-      className={'react-table__column ' + (hoverColumn===column.name ? 'hover' : '')}
+      className={'react-table__column ' + (hoverElement===column.name ? 'hover' : '')}
       onClick={() => handleOrderBy(column)}>
       <a className="react-table__column-link">{children}</a>
       {column?.sort ? <i className={column.sort === 'asc' ? 'bx bx-sort-up' : 'bx bx-sort-down'}></i> : ''}

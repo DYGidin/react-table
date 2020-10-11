@@ -104,3 +104,10 @@
 .react-table__groups-list li + li {
   margin-left: 10px;
 }
+.react-table__groups-list .move-component {
+  width: 100%;
+  max-width: 120px;
+}
+.move-component {
+  width: 100%;
+}

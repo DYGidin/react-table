@@ -7,8 +7,7 @@ export default function (state, action) {
       return { ...state, ...action.payload }
     case 'mouse-down':
       return { ...state, mouseDown: action.payload }
-    case 'mouse-up':
-
+    case 'move-element':
       const moveArr = (arr, old_index, new_index) => {
         if (new_index >= arr.length) {
           let k = new_index - arr.length + 1;
@@ -23,18 +22,31 @@ export default function (state, action) {
       if (!state.mouseDown)
         return { ...state, mouseDown: false };
 
-      const newIndex = state.columns.indexOf(state.columns.find(c => c.name === state.hoverColumn));
-      const oldIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload));
+      let newIndex;
+      let oldIndex = newIndex = -1;
 
-      if (newIndex === -1)
-        return { ...state, mouseDown: false };
+      switch (action.payload.type) {
+        case 'group':
+          newIndex = state.groupsList.indexOf(state.groupsList.find(c => c.name === state.hoverElement));
+          oldIndex = state.groupsList.indexOf(state.groupsList.find(c => c.name === action.payload.name));
+          if (newIndex === -1)
+            return { ...state, mouseDown: false };
 
-      state.columns = moveArr(state.columns, oldIndex, newIndex);
+          state.groupsList = moveArr(state.groupsList, oldIndex, newIndex);
+          break;
+        default:
+          newIndex = state.columns.indexOf(state.columns.find(c => c.name === state.hoverElement));
+          oldIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload.name));
+          if (newIndex === -1)
+            return { ...state, mouseDown: false };
 
-      state.mouseDown = false
+          state.columns = moveArr(state.columns, oldIndex, newIndex);
+          break;
+      }
+
       return { ...state, mouseDown: false }
-    case 'move-column':
-      return { ...state, moveColumn: action.payload }
+    case 'drag-element':
+      return { ...state, dragElement: action.payload }
     case 'calc-formula':
       state.columns.filter(col => col.formula).forEach(column => {
         state.rows = state.rows.map(row => {
@@ -55,22 +67,22 @@ export default function (state, action) {
     case 'set-grouplist':
       return { ...state, groupsList: action.payload }
     case 'set-group-position':
-      state.groupsList = state.groupsList.map(group => {        
+      state.groupsList = state.groupsList.map(group => {
         if (group.name === action.payload.name) {
           group.position = action.payload.position
         }
         return group
       })
-      
+
       return state;
     case 'set-hover':
-      state.hoverColumn = '';
+      let hoverElement = '';
       state.columns.forEach(col => {
         if (col.name === action.payload) {
-          state.hoverColumn = col.name
+          hoverElement = col.name
         }
       })
-      return { ...state };
+      return { ...state, hoverElement };
     default:
       return state;
   }

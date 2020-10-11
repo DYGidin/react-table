@@ -126,7 +126,7 @@ function App() {
       }
     ],
     //filter: { searchStr: 'Jap' },
-    //groups: ['category', 'status']
+    groups: ['category', 'status']
   }
 
   const [table, setTable] = useState(mock);

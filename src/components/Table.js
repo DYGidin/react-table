@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useReducer } from 'react';
+import React, { useMemo, useEffect, useReducer, useState } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -15,11 +15,12 @@ import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
 
 
-function Table({ table }) {
-
+function Table(props) {
+  const [table, setTable] = useState(props.table);
+  const [updateGroups, setUpdateGroups] = useState(false);
   const [state, dispatch] = useReducer(reducer, table);
 
-  let { columns, groups, rows, filter, paintRows, ready, moveColumn, hoverColumn, groupsList } = state || null;
+  let { columns, groups, rows, filter, paintRows, ready, dragElement, hoverElement, groupsList } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
 
   useEffect(() => {
@@ -41,27 +42,28 @@ function Table({ table }) {
 
   useEffect(() => {
     if (ready) {
+      console.log('ready')
       handleOrderBy(columns.find(c => c?.sort), false);
     }
   }, [ready]);
 
-  const handleMoveStart = (columnName) => {
+  const handleMoveStart = (name, type = 'column') => {
     dispatch({ type: 'mouse-down', payload: true });
-    dispatch({ type: 'move-column', payload: columnName });
+    dispatch({ type: 'drag-element', payload: { name, type } });
   }
 
   const handleMove = (position) => {
     columns.forEach(column => {
-      
+
       if (!column?.isGroup) {
-        
+
         const { left, top, height, width } = column.position;
         if (
           position.left + position.width > (left + (width / 2))
           && position.left + (position.width / 2) < left + width
           && position.top + position.height > (top + (height / 2))
           && position.top + (position.height / 2) < top + height
-        ) {          
+        ) {
           dispatch({
             type: 'set-hover',
             payload: column.name
@@ -89,12 +91,27 @@ function Table({ table }) {
 
   }
 
+  /**
+   * проблема с сортировкой
+   * сделать сортировку только через объект фильтр
+   */
+  useEffect(() => {
+    if (groupsList) {
+      dispatch({ type: 'ready', payload: false })
+      const newTable = { ...table, groups: groupsList.map(g => g.name) }      
+      setTable(newTable)
+    }
+  }, [updateGroups])
+
   const handleMoveStop = () => {
-    dispatch({ type: 'mouse-up', payload: moveColumn });
+    dispatch({ type: 'move-element', payload: dragElement });
     dispatch({ type: 'mouse-down', payload: false });
     dispatch({ type: 'set-hover', payload: '' });
-    dispatch({ type: 'move-column', payload: '' });
-    dispatch({ type: 'set-data', payload: { filter: { ...filter } } });
+    dispatch({ type: 'drag-element', payload: '' });
+    if (dragElement.type === 'group')
+      setUpdateGroups(!updateGroups)
+
+    dispatch({ type: 'set-data', payload: { filter: { ...filter } } })
   }
 
   const handleSearchBar = (value) => {
@@ -148,12 +165,12 @@ function Table({ table }) {
             groupsList.map((group, i) =>
               <MoveComponent
                 key={i}
-                handleMoveStart={() => handleMoveStart(group.name)}
+                handleMoveStart={() => handleMoveStart(group.name, 'group')}
                 handleMoveStop={handleMoveStop}
                 handleMove={handleMove}>
                 <GroupListItem
                   key={i}
-                  hoverColumn={hoverColumn}
+                  hoverElement={hoverElement}
                   column={group}>{group.name}</GroupListItem>
               </MoveComponent>
             )
@@ -175,7 +192,7 @@ function Table({ table }) {
                   >
                     <Column
                       key={i}
-                      hoverColumn={hoverColumn}
+                      hoverElement={hoverElement}
                       column={column}>{column.name}</Column>
                   </MoveComponent>
                 )}
@@ -232,7 +249,7 @@ function Table({ table }) {
                 >
                   <Column
                     key={i}
-                    hoverColumn={hoverColumn}
+                    hoverElement={hoverElement}
                     column={column}>
                     {column.name}
                   </Column>

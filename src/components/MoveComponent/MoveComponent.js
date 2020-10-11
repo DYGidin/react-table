@@ -4,7 +4,7 @@ function MoveComponent({ children, handleMoveStart, handleMove, handleMoveStop }
   const [style, setStyle] = useState(null)
   const [mouseDown, setMouseDown] = useState(false);
   const offset = useRef();
-
+  const el = useRef();
   useEffect(() => {
     if (mouseDown) {
       document.addEventListener('mousemove', mouseMove);
@@ -40,9 +40,8 @@ function MoveComponent({ children, handleMoveStart, handleMove, handleMoveStop }
     handleMoveStop();
   }
 
-  const handleMouseDown = (event) => {
-    const { left, top, width, height } = event.target.getBoundingClientRect();
-
+  const handleMouseDown = (event) => {    
+    const { left, top, width, height } = el.current.getBoundingClientRect();
     offset.current = {
       offsetX: event.clientX - left,
       offsetY: event.clientY - top,
@@ -64,7 +63,8 @@ function MoveComponent({ children, handleMoveStart, handleMove, handleMoveStop }
 
   return (
     <div
-      style={{ width: '100%' }}
+      className='move-component'
+      ref={el}
       onMouseDown={(event) => handleMouseDown(event)}>
       {style &&
         <div style={style}>{children}</div>
