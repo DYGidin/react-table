@@ -16,8 +16,11 @@ import GroupListItem from './Groups/GroupListItem';
 
 
 function Table(props) {
+  // возможно переместить в редьюсер
   const [table, setTable] = useState(props.table);
   const [updateGroups, setUpdateGroups] = useState(false);
+  //----
+
   const [state, dispatch] = useReducer(reducer, table);
 
   let { columns, groups, rows, filter, paintRows, ready, dragElement, hoverElement, groupsList } = state || null;
@@ -41,8 +44,15 @@ function Table(props) {
   }, [table]);
 
   useEffect(() => {
+    if (groupsList) {
+      dispatch({ type: 'ready', payload: false })
+      const newTable = { ...table, columns, groups: groupsList.map(g => g.name) }
+      setTable(newTable)
+    }
+  }, [updateGroups]);
+
+  useEffect(() => {
     if (ready) {
-      console.log('ready')
       handleOrderBy(columns.find(c => c?.sort), false);
     }
   }, [ready]);
@@ -90,18 +100,6 @@ function Table(props) {
     }
 
   }
-
-  /**
-   * проблема с сортировкой
-   * сделать сортировку только через объект фильтр
-   */
-  useEffect(() => {
-    if (groupsList) {
-      dispatch({ type: 'ready', payload: false })
-      const newTable = { ...table, groups: groupsList.map(g => g.name) }      
-      setTable(newTable)
-    }
-  }, [updateGroups])
 
   const handleMoveStop = () => {
     dispatch({ type: 'move-element', payload: dragElement });
