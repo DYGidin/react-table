@@ -74,9 +74,10 @@ function Table(props) {
           && position.top + position.height > (top + (height / 2))
           && position.top + (position.height / 2) < top + height
         ) {
+        
           dispatch({
             type: 'set-hover',
-            payload: column.name
+            payload: { type: 'column', name: column.name }
           })
         }
       }
@@ -93,12 +94,11 @@ function Table(props) {
         ) {
           dispatch({
             type: 'set-hover',
-            payload: group.name
+            payload: { type: 'group', name: group.name }
           })
         }
       });
     }
-
   }
 
   const handleMoveStop = () => {
@@ -106,6 +106,7 @@ function Table(props) {
     dispatch({ type: 'mouse-down', payload: false });
     dispatch({ type: 'set-hover', payload: '' });
     dispatch({ type: 'drag-element', payload: '' });
+    
     if (dragElement.type === 'group')
       setUpdateGroups(!updateGroups)
 
@@ -168,7 +169,7 @@ function Table(props) {
                 handleMove={handleMove}>
                 <GroupListItem
                   key={i}
-                  hoverElement={hoverElement}
+                  hoverElement={hoverElement?.name}
                   column={group}>{group.name}</GroupListItem>
               </MoveComponent>
             )
@@ -190,7 +191,7 @@ function Table(props) {
                   >
                     <Column
                       key={i}
-                      hoverElement={hoverElement}
+                      hoverElement={hoverElement?.name}
                       column={column}>{column.name}</Column>
                   </MoveComponent>
                 )}
@@ -247,7 +248,7 @@ function Table(props) {
                 >
                   <Column
                     key={i}
-                    hoverElement={hoverElement}
+                    hoverElement={hoverElement?.name}
                     column={column}>
                     {column.name}
                   </Column>
