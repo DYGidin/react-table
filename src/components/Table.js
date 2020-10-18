@@ -14,6 +14,10 @@ import '../assets/css/style.css';
 import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
 
+/**
+ * Проблема при перемещении группы в колонку не соблюдается порядок
+ * 
+ */
 
 function Table(props) {
   // возможно переместить в редьюсер
@@ -27,27 +31,18 @@ function Table(props) {
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
 
   useEffect(() => {
-    dispatch({ type: 'calc-formula' })
-    if (table.groups) {
-      const result = new Groups().create(table)
-      dispatch({ type: 'set-data', payload: result });
-      const list = []
-      table.groups.forEach(g => {
-        const c = columns.find(c => c.name === g);
-        list.push({ name: c.name })
-      })
-
-      dispatch({ type: 'set-grouplist', payload: list })
-    }
+    dispatch({ type: 'calc-formula' });
+    if (table.groups)
+      createGroups();
 
     dispatch({ type: 'ready', payload: true })
   }, [table]);
 
   useEffect(() => {
     if (groupsList) {
-      dispatch({ type: 'ready', payload: false })
       const newTable = { ...table, columns, groups: groupsList.map(g => g.name) }
       setTable(newTable)
+      createGroups();
     }
   }, [updateGroups]);
 
@@ -56,6 +51,17 @@ function Table(props) {
       handleOrderBy(columns.find(c => c?.sort), false);
     }
   }, [ready]);
+
+  const createGroups = () => {
+    const result = new Groups().create(table)
+    dispatch({ type: 'set-data', payload: result });
+    const list = []
+    table.groups.forEach(g => {
+      const c = columns.find(c => c.name === g);
+      list.push({ name: c.name })
+    })
+    dispatch({ type: 'set-grouplist', payload: list })
+  }
 
   const handleMoveStart = (name, type = 'column') => {
     dispatch({ type: 'mouse-down', payload: true });
@@ -74,7 +80,7 @@ function Table(props) {
           && position.top + position.height > (top + (height / 2))
           && position.top + (position.height / 2) < top + height
         ) {
-        
+
           dispatch({
             type: 'set-hover',
             payload: { type: 'column', name: column.name }
@@ -101,16 +107,20 @@ function Table(props) {
     }
   }
 
+  const refreshFilter = () => { 
+    dispatch({ type: 'set-data', payload: { filter: { ...filter } } }); 
+    handleOrderBy(columns.find(c => c?.sort), false);
+  }
+
   const handleMoveStop = () => {
     dispatch({ type: 'move-element', payload: dragElement });
     dispatch({ type: 'mouse-down', payload: false });
     dispatch({ type: 'set-hover', payload: '' });
     dispatch({ type: 'drag-element', payload: '' });
-    
-    if (dragElement.type === 'group')
-      setUpdateGroups(!updateGroups)
 
-    dispatch({ type: 'set-data', payload: { filter: { ...filter } } })
+    if (groupsList)
+      setUpdateGroups(!updateGroups)
+    refreshFilter();
   }
 
   const handleSearchBar = (value) => {

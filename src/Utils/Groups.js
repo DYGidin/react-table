@@ -235,6 +235,8 @@ class Groups {
   }
 
   create(dataTable) {
+    if (!dataTable.groups.length)
+      return { columns:dataTable.columns, groups: [], rows: dataTable.rows }
     this.dataTable = dataTable;
     const map = this.createMap();
     const tree = this.mapToTree(map);

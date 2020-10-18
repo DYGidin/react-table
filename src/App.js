@@ -37,7 +37,7 @@ function App() {
     {
       name: 'quant',
       title: 'Quant',
-      sort: 'asc',
+      sort: 'desc',
       type: Number,
       total: (val) => Calc.sum(val)
     },
