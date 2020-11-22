@@ -99,6 +99,8 @@
   list-style: none;
   display: flex;
   align-items: center;
+  min-height: 50px;
+  border: 1px dashed #ccc;
 }
 
 .react-table__groups-list li + li {

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useReducer, useState } from 'react';
+import React, { useMemo, useEffect, useReducer, useState, useRef } from 'react';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -15,7 +15,7 @@ import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
 
 /**
- * Проблема при перемещении группы в колонку не соблюдается порядок
+ * ПРОВЕРИТЬ Проблема при перемещении группы в колонку не соблюдается порядок
  * 
  */
 
@@ -26,8 +26,9 @@ function Table(props) {
   //----
 
   const [state, dispatch] = useReducer(reducer, table);
+  const groupsListContainer = useRef();
 
-  let { columns, groups, rows, filter, paintRows, ready, dragElement, hoverElement, groupsList } = state || null;
+  let { columns, groups, rows, filter, paintRows, ready, hoverElement, dragElement, groupsList } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
 
   useEffect(() => {
@@ -37,6 +38,10 @@ function Table(props) {
 
     dispatch({ type: 'ready', payload: true })
   }, [table]);
+
+  useEffect(() => {
+    setTable(props.table)
+  }, [props.table]);
 
   useEffect(() => {
     if (groupsList) {
@@ -66,13 +71,30 @@ function Table(props) {
   const handleMoveStart = (name, type = 'column') => {
     dispatch({ type: 'mouse-down', payload: true });
     dispatch({ type: 'drag-element', payload: { name, type } });
+    isHoverGroupsListContainer.current = false;
   }
 
+  const isHoverGroupsListContainer = useRef(false)
   const handleMove = (position) => {
+    const { left: leftContainer, top: topContainer, height: heightContainer, width: widthContainer } = groupsListContainer.current.getBoundingClientRect();
+
+    if (
+      position.left > leftContainer
+      && position.left < leftContainer + widthContainer
+      && position.top > topContainer
+      && position.top < topContainer + heightContainer
+    ) {
+
+      dispatch({
+        type: 'set-hover',
+        payload: { type: 'container', name: 'groupListContainer' }
+      })
+      isHoverGroupsListContainer.current = true;
+    };
+
     columns.forEach(column => {
 
       if (!column?.isGroup) {
-
         const { left, top, height, width } = column.position;
         if (
           position.left + position.width > (left + (width / 2))
@@ -107,12 +129,24 @@ function Table(props) {
     }
   }
 
-  const refreshFilter = () => { 
-    dispatch({ type: 'set-data', payload: { filter: { ...filter } } }); 
+  const refreshFilter = () => {
+    dispatch({ type: 'set-data', payload: { filter: { ...filter } } });
     handleOrderBy(columns.find(c => c?.sort), false);
   }
 
   const handleMoveStop = () => {
+    if (isHoverGroupsListContainer.current === true && !groupsList?.length) {
+      setTable({ ...table, groups: [dragElement.name] });
+      columns = columns.map(c => {
+        if (c.name === dragElement.name) {
+          c.isGroup = true
+        }
+        return c;
+      })
+      dispatch({ type: 'set-data', payload: { columns: columns } });
+      return;
+    }
+
     dispatch({ type: 'move-element', payload: dragElement });
     dispatch({ type: 'mouse-down', payload: false });
     dispatch({ type: 'set-hover', payload: '' });
@@ -169,7 +203,7 @@ function Table(props) {
   return (
     <Context.Provider value={{ handleOrderBy, dispatch, state }}>
       <div className="react-table">
-        <ul className="react-table__groups-list">
+        <ul className="react-table__groups-list" ref={groupsListContainer}>
           {groupsList &&
             groupsList.map((group, i) =>
               <MoveComponent
