@@ -13,23 +13,26 @@ import '../assets/css/style.css';
 
 import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
+import Themes from './themes';
 
-/**
- * ПРОВЕРИТЬ Проблема при перемещении группы в колонку не соблюдается порядок
- * 
- */
 
 function Table(props) {
-  // возможно переместить в редьюсер
+
   const [table, setTable] = useState(props.table);
   const [updateGroups, setUpdateGroups] = useState(false);
-  //----
 
   const [state, dispatch] = useReducer(reducer, table);
   const groupsListContainer = useRef();
+  const [theme, setTheme] = useState(Themes['dark']);
 
   let { columns, groups, rows, filter, paintRows, ready, hoverElement, dragElement, groupsList } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
+
+  // swith theme
+  useEffect(() => {
+    if (props.theme)
+      setTheme(props.theme)
+  }, props.theme)
 
   useEffect(() => {
     dispatch({ type: 'calc-formula' });
@@ -47,7 +50,6 @@ function Table(props) {
     if (groupsList) {
       const newTable = { ...table, columns, groups: groupsList.map(g => g.name) }
       setTable(newTable)
-      createGroups();
     }
   }, [updateGroups]);
 
@@ -58,6 +60,7 @@ function Table(props) {
   }, [ready]);
 
   const createGroups = () => {
+    console.log(table)
     const result = new Groups().create(table)
     dispatch({ type: 'set-data', payload: result });
     const list = []
@@ -71,13 +74,12 @@ function Table(props) {
   const handleMoveStart = (name, type = 'column') => {
     dispatch({ type: 'mouse-down', payload: true });
     dispatch({ type: 'drag-element', payload: { name, type } });
-    isHoverGroupsListContainer.current = false;
+    isHoverOnGroupsList.current = false;
   }
 
-  const isHoverGroupsListContainer = useRef(false)
+  const isHoverOnGroupsList = useRef(false)
   const handleMove = (position) => {
     const { left: leftContainer, top: topContainer, height: heightContainer, width: widthContainer } = groupsListContainer.current.getBoundingClientRect();
-
     if (
       position.left > leftContainer
       && position.left < leftContainer + widthContainer
@@ -89,7 +91,7 @@ function Table(props) {
         type: 'set-hover',
         payload: { type: 'container', name: 'groupListContainer' }
       })
-      isHoverGroupsListContainer.current = true;
+      isHoverOnGroupsList.current = true;
     };
 
     columns.forEach(column => {
@@ -135,7 +137,9 @@ function Table(props) {
   }
 
   const handleMoveStop = () => {
-    if (isHoverGroupsListContainer.current === true && !groupsList?.length) {
+
+    // if there are no groups
+    if (isHoverOnGroupsList.current === true && !groupsList?.length) {
       setTable({ ...table, groups: [dragElement.name] });
       columns = columns.map(c => {
         if (c.name === dragElement.name) {
@@ -201,7 +205,7 @@ function Table(props) {
   }
 
   return (
-    <Context.Provider value={{ handleOrderBy, dispatch, state }}>
+    <Context.Provider value={{ handleOrderBy, dispatch, state, theme }}>
       <div className="react-table">
         <ul className="react-table__groups-list" ref={groupsListContainer}>
           {groupsList &&
@@ -329,6 +333,3 @@ function Table(props) {
 }
 
 export default Table;
-// React.memo(Table, (prevProps, nextProps) => {
-//  return prevProps.filter &&  prevProps.filter === nextProps.filter ? true : false
-// });

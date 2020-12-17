@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useContext, useState } from 'react';
 import { Context } from '../context';
 function GroupListItem(props) {
   const { children, column, hoverElement } = props;
-  const { dispatch, state } = useContext(Context);
+  const { dispatch, state, theme } = useContext(Context);
   const el = useRef();
 
   useEffect(() => {    
@@ -12,6 +12,7 @@ function GroupListItem(props) {
 
   return (
     <div ref={el}
+      style={theme.columns}
       className={'react-table__column ' + (hoverElement === column.name ? 'hover' : '')}>
       {children}
     </div>

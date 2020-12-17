@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useState, useContext } from 'react';
+import { Context } from '../context';
 function Row({ columns, row, paintRows = [] }) {
+  
+  const { theme } = useContext(Context);
   const [styleRow, setStyleRow] = useState(null);
   const [styleCell, setStyleCell] = useState([]);
   //console.log('row render')
@@ -18,7 +20,8 @@ function Row({ columns, row, paintRows = [] }) {
     })
     
     return !column?.isGroup  && column?.visible !== false ?
-      <div className="react-table__row-cell" key={i} style={style}>
+      <div className="react-table__row-cell" key={i} 
+        style={style}>
         {render(column, row[column.name])}
       </div> : ''
   });
@@ -39,7 +42,7 @@ function Row({ columns, row, paintRows = [] }) {
   }, [row])
 
   return (
-    <div className="react-table__row" style={styleRow}>
+    <div className="react-table__row" style={{...theme.rows, ...styleRow}}>
       {rowCells}
     </div>
   );

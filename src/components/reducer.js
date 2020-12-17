@@ -35,18 +35,23 @@ export default function (state, action) {
             let col = state.columns.find(c => c.name === action.payload.name);
             col.isGroup = false;
             currentIndex = state.groupsList.indexOf(group);
-                
+            const oldIndex = state.columns.indexOf(col);
             if (newIndex === -1) return { ...state, mouseDown: false };
+
             state.groupsList.splice(currentIndex, 1);
-            state.columns = moveArr(state.columns, state.columns.indexOf(col), newIndex);
+                      
+            if (Math.abs(newIndex - oldIndex) !== 1)
+              state.columns = moveArr(state.columns, oldIndex, newIndex);
+
             return { ...state, mouseDown: false }
           default:
+            
             newIndex = state.groupsList.indexOf(state.groupsList.find(g => g.name === state.hoverElement.name));
             let column = state.columns.find(c => c.name === action.payload.name);
             currentIndex = state.columns.indexOf(column);
-            
+
             if (newIndex === -1) return { ...state, mouseDown: false };
-         
+
             column.isGroup = true;
             state.groupsList.splice(newIndex, 0, { name: action.payload.name, position: null });
             return { ...state, mouseDown: false }
@@ -55,18 +60,21 @@ export default function (state, action) {
 
       switch (action.payload.type) {
         case 'group':
+        
           newIndex = state.groupsList.indexOf(state.groupsList.find(g => g.name === state.hoverElement.name));
           currentIndex = state.groupsList.indexOf(state.groupsList.find(c => c.name === action.payload.name));
+
           if (newIndex === -1)
             return { ...state, mouseDown: false };
 
           state.groupsList = moveArr(state.groupsList, currentIndex, newIndex);
           break;
-        default:
+        default:          
           newIndex = state.columns.indexOf(state.columns.find(c => c.name === state.hoverElement.name));
           currentIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload.name));
           if (newIndex === -1)
             return { ...state, mouseDown: false };
+
           state.columns = moveArr(state.columns, currentIndex, newIndex);
           break;
       }

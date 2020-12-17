@@ -1,19 +1,16 @@
 /**
- * Автор: Денис Гидин (Denis Gidin)
- * Версия 1.0
- * Описание:
- * Класс для группировки данных
- * в качестве входных данных объект вида {groups:groups, rows:rows}
- * Пример: new Groups({groups:dataTable.groups, rows:dataTable.rows});
- * Успешным результатом является массив строк для последующей группировки
+ * Autor: Denis Gidin
+ * Version 1.0
+ * Description:
+ * Class for creating groups 
  */
 import Calc from './Calc';
 
 class Groups {
   /**
-   * Формирование массива для группировки
-   * @param inGroup - группа
-   * @param inlevel - уровень
+   * Create array for groups
+   * @param inGroup - group
+   * @param inlevel - level
    */
   getPath = (inGroup, inlevel) => {
     let result = [];
@@ -34,7 +31,7 @@ class Groups {
   }
 
   /**
-   * Создание карты для последующей сборки объекта
+   * Create map for object
    */
   createMap = () => {
     let result = '';
@@ -53,9 +50,9 @@ class Groups {
   }
 
   /**
-   * Создание объекта по карте
-   * @param map - карта
-   * @param row - объект (строка)
+   * Create object from map
+   * @param map - map
+   * @param row - object (as string)
    */
   createObjectByMap = (map, row) => {
     const result = { key: map.key, value: row[map.key] }
@@ -66,8 +63,8 @@ class Groups {
   }
 
   /**
-   * Создание дерева по карте
-   * @param map - карта
+   * Create tree by map
+   * @param map - map
    */
   mapToTree = (map) => {
     const tree = [];
@@ -82,8 +79,8 @@ class Groups {
   }
 
   /**
-   * Создание группы
-   * @param arr - объект
+   * Create group
+   * @param arr - object
    */
   createGroup = (arr) => {
     if (arr.children && arr.children.key) {
@@ -108,8 +105,8 @@ class Groups {
   }
 
   /**
-   * Создание групп 
-   * @param tree - дерево 
+   * Create groups
+   * @param tree - tree 
    */
   treeToGroups = (tree) => {
     let result = [];
@@ -121,8 +118,8 @@ class Groups {
   }
 
   /**
-   * Конвертировать группы в путь
-   * @param groups - массив групп
+   * Convert groups to path
+   * @param groups - array of groups
    */
   groupsToPath = (groups) => {
     let result = [];
@@ -136,10 +133,10 @@ class Groups {
     return result;
   }
 
-  /**
-   * Фильтрация данных по строке группы
-   * @param rows - записи
-   * @param filterStr - строка / фильтр
+  /**   
+   * Filter data by group string
+   * @param rows - rows
+   * @param filterStr - string / filter
    */
   filter = (rows, filterStr) => {
     const arr = filterStr.match(this.paramsRegExp);
@@ -165,8 +162,8 @@ class Groups {
   }
 
   /**
-   * Парсинг для получения данных по группе
-   * @param group - группа в виде строки
+   * Parse data by group
+   * @param group - group as string
    */
   getGroupData = (group) => {
 
@@ -181,9 +178,9 @@ class Groups {
   }
 
   /**
-   * Получение готового списка групп
-   * @param groupsPath - пути (строки групп)
-   * @param { columns, rows } - колокни, записи 
+   * Get groups list
+   * @param groupsPath - pathes (strings of groups)
+   * @param { columns, rows } - columns, rows
    */
   getGroups = (groupsPath, { columns, rows }) => {
 
@@ -236,13 +233,16 @@ class Groups {
 
   create(dataTable) {
     if (!dataTable.groups.length)
-      return { columns:dataTable.columns, groups: [], rows: dataTable.rows }
+      return { columns: dataTable.columns, groups: [], rows: dataTable.rows }
     this.dataTable = dataTable;
     const map = this.createMap();
     const tree = this.mapToTree(map);
     const groups = this.treeToGroups(tree);
     const paths = this.groupsToPath(groups);
     const result = this.getGroups(paths, this.dataTable);
+    result.columns.map(c => {
+      return { ...c, isGroup: result.groups.find(g=>g.name === c.name) ? true : false }
+    })
     return result;
   }
 
