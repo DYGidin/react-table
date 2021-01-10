@@ -240,9 +240,10 @@ class Groups {
     const groups = this.treeToGroups(tree);
     const paths = this.groupsToPath(groups);
     const result = this.getGroups(paths, this.dataTable);
-    result.columns.map(c => {
-      return { ...c, isGroup: result.groups.find(g=>g.name === c.name) ? true : false }
+    result.columns = result.columns.map(c => {
+      return { ...c, isGroup: result.groups.find(g => g.key === c.name) ? true : false }
     })
+
     return result;
   }
 

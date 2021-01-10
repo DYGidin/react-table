@@ -74,7 +74,7 @@ export default function (state, action) {
           currentIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload.name));
           if (newIndex === -1)
             return { ...state, mouseDown: false };
-
+            console.log(state.columns)
           state.columns = moveArr(state.columns, currentIndex, newIndex);
           break;
       }

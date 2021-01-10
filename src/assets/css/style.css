@@ -17,7 +17,7 @@
 }
 
 .react-table__column.hover {
-  background: #cccccc;
+  opacity: 0.5;
 }
 
 .react-table__column {

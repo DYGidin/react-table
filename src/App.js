@@ -7,6 +7,7 @@ import Calc from './utils/Calc';
 function App() {
 
   const mock = {
+    name:'Countries Table',
     columns: [{
       name: 'category',
       title: 'Category'
@@ -126,13 +127,19 @@ function App() {
       }
     ],
     //filter: { searchStr: 'Jap' },
-    groups: []
+
   }
 
   const [table, setTable] = useState(mock);
 
-  const handleClick = () => {    
-    setTable({ ...table, groups: ['country', 'category', 'status'] });
+  const handleClick = () => {
+    setTable({
+      ...table,  rows: [        
+        { category: 'Electronics', price: 25.4, quant: 12, status: 'processing', name: 'iPhone 5', country: 'Japan' },
+        { category: 'Electronics', price: 66.5, quant: 45, status: 'delivery', name: 'Nexus 7', country: 'Japan' },
+        { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
+      ],
+    });
   }
 
   return (

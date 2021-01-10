@@ -16,6 +16,10 @@ import GroupListItem from './Groups/GroupListItem';
 import Themes from './themes';
 
 
+/** 
+ * Проверить сортировку 
+ */
+
 function Table(props) {
 
   const [table, setTable] = useState(props.table);
@@ -34,33 +38,42 @@ function Table(props) {
       setTheme(props.theme)
   }, props.theme)
 
+  // load or table change
   useEffect(() => {
-    dispatch({ type: 'calc-formula' });
+    
     if (table.groups)
       createGroups();
 
     dispatch({ type: 'ready', payload: true })
+    dispatch({ type: 'calc-formula' });
   }, [table]);
 
+  // if prop rows has been change
   useEffect(() => {
-    setTable(props.table)
+    dispatch({ type: 'set-data', payload: { rows: props.table.rows } });      
+    setTable({ ...table, ...{ rows: props.table.rows } })
   }, [props.table]);
 
+  // groups update
   useEffect(() => {
     if (groupsList) {
       const newTable = { ...table, columns, groups: groupsList.map(g => g.name) }
-      setTable(newTable)
+      setTable(newTable);      
     }
   }, [updateGroups]);
 
+  // order rows if table is loaded
   useEffect(() => {
     if (ready) {
       handleOrderBy(columns.find(c => c?.sort), false);
     }
   }, [ready]);
 
+  useEffect(() => {
+    dispatch({ type: 'set-data', payload: { columns, filter: { ...filter } } });
+  }, [columns])
+
   const createGroups = () => {
-    console.log(table)
     const result = new Groups().create(table)
     dispatch({ type: 'set-data', payload: result });
     const list = []
@@ -86,12 +99,13 @@ function Table(props) {
       && position.top > topContainer
       && position.top < topContainer + heightContainer
     ) {
-
-      dispatch({
-        type: 'set-hover',
-        payload: { type: 'container', name: 'groupListContainer' }
-      })
-      isHoverOnGroupsList.current = true;
+      if (!isHoverOnGroupsList.current) {
+        dispatch({
+          type: 'set-hover',
+          payload: { type: 'container', name: 'groupListContainer' }
+        })
+        isHoverOnGroupsList.current = true;
+      }
     };
 
     columns.forEach(column => {
@@ -115,6 +129,7 @@ function Table(props) {
 
     if (groupsList && groupsList.length) {
       groupsList.forEach(group => {
+        if (!group.position) return;
         const { left, top, height, width } = group.position;
         if (
           position.left + position.width > (left + (width / 2))
@@ -158,7 +173,8 @@ function Table(props) {
 
     if (groupsList)
       setUpdateGroups(!updateGroups)
-    refreshFilter();
+    //refreshFilter();
+
   }
 
   const handleSearchBar = (value) => {
