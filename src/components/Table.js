@@ -31,7 +31,7 @@ function Table(props) {
   // load or table change
   useEffect(() => {
     if (table.groups)
-      dispatch({ type: CREATE_GROUPS, payload: table })
+      dispatch({ type: CREATE_GROUPS, payload: table }) 
     dispatch({ type: READY, payload: true })
     dispatch({ type: CALC_FORMULA });
 
@@ -149,12 +149,12 @@ function Table(props) {
       return;
     }
 
+   
     dispatch({ type: MOVE_ELEMENT, payload: dragElement });
-
-    if (groupsList) {
-      setUpdateGroups(!updateGroups)
-      refreshFilter()
-    }
+    if (groupsList) {      
+      setUpdateGroups(!updateGroups)      
+    } 
+    refreshFilter()
   }
 
   const handleSearchBar = (value) => {

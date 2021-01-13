@@ -38,7 +38,7 @@ function App() {
     {
       name: 'quant',
       title: 'Quant',
-      sort: 'desc',
+      sort: 'asc',
       type: Number,
       total: (val) => Calc.sum(val)
     },
@@ -128,7 +128,7 @@ function App() {
     ],
     theme: 'dark',
     activeRow: { category: 'Sporting Goods', price: 66.5, quant: 20, status: 'return', name: 'Hockey', country: 'Russia' },
-    
+    //groups:['country', 'status']
     //filter: { searchStr: 'Jap' },
   }
 
