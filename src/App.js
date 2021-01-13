@@ -126,11 +126,18 @@ function App() {
         condition: (row) => row['country'] === 'China'
       }
     ],
-    theme: 'default',
+    theme: 'dark',
+    activeRow: { category: 'Sporting Goods', price: 66.5, quant: 20, status: 'return', name: 'Hockey', country: 'Russia' },
+    
     //filter: { searchStr: 'Jap' },
-
   }
 
+  mock.rows = mock.rows.map(row => {
+    return {
+      ...row, id: mock.rows.reduce((maxId, row) => Math.max(row.id || 0, maxId), -1) + 1
+    }
+  })
+  console.log(mock.rows)
   const [table, setTable] = useState(mock);
 
   const handleClick = () => {

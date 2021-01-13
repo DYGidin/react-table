@@ -1,4 +1,5 @@
 import Calc from '../utils/Calc';
+import Groups from '../utils/Groups';
 import {
   READY,
   SET_DATA,
@@ -8,8 +9,9 @@ import {
   SET_HOVER,
   CALC_FORMULA,
   SET_COLUMN_POSITION,
-  SET_GROUPLIST,
-  SET_GROUP_POSITION
+  CREATE_GROUPS,
+  SET_GROUP_POSITION,
+  ORDER_BY
 } from './Constants/ActionTypes'
 import { GROUP } from './Constants/ColumnTypes';
 
@@ -39,10 +41,10 @@ export default function (state, action) {
 
       let newIndex;
       let currentIndex = newIndex = -1;
-      
+
       // move column to groups or group to columns
       if (state.dragElement.type !== state.hoverElement.type) {
-       
+
         switch (state.dragElement.type) {
           case GROUP:
             newIndex = state.columns.indexOf(state.columns.find(g => g.name === state.hoverElement.name));
@@ -60,13 +62,13 @@ export default function (state, action) {
 
             return { ...state, mouseDown: false }
           default:
-            
+
             newIndex = state.groupsList.indexOf(state.groupsList.find(g => g.name === state.hoverElement.name));
             let column = state.columns.find(c => c.name === action.payload.name);
             currentIndex = state.columns.indexOf(column);
-            
+
             if (newIndex === -1) return { ...state, mouseDown: false };
-            
+
             column.isGroup = true;
             state.groupsList.splice(newIndex, 0, { name: action.payload.name, position: null });
             return { ...state, mouseDown: false }
@@ -89,15 +91,15 @@ export default function (state, action) {
           currentIndex = state.columns.indexOf(state.columns.find(c => c.name === action.payload.name));
           if (newIndex === -1)
             return { ...state, mouseDown: false };
-       
+
           state.columns = moveArr(state.columns, currentIndex, newIndex);
           break;
       }
 
-      return { ...state, mouseDown: false }
+      return { ...state, mouseDown: false, hoverElement: null, dragElement: null }
     case DRAG_ELEMENT:
       return { ...state, dragElement: action.payload }
-    case SET_HOVER:      
+    case SET_HOVER:
       return { ...state, hoverElement: action.payload };
     case CALC_FORMULA:
       state.columns.filter(col => col.formula).forEach(column => {
@@ -116,8 +118,18 @@ export default function (state, action) {
         return col
       })
       return state;
-    case SET_GROUPLIST:
-      return { ...state, groupsList: action.payload }
+    case CREATE_GROUPS:
+
+      const result = new Groups().create(action.payload)
+      state = { ...state, ...result };
+
+      const list = []
+      action.payload.groups.forEach(g => {
+        const c = state.columns.find(c => c.name === g);
+        list.push({ name: c.name })
+      })
+
+      return { ...state, groupsList: list }
     case SET_GROUP_POSITION:
       state.groupsList = state.groupsList.map(group => {
         if (group.name === action.payload.name) {
@@ -127,6 +139,19 @@ export default function (state, action) {
       })
 
       return state;
+    case ORDER_BY:
+
+      const newColumns = state.columns.map(c => {
+        let sort = '';
+        if (c.name === action.payload.column.name) {
+          sort = action.payload.revers === true ? (c.sort === 'asc' ? 'desc' : 'asc') : action.payload.column.sort;
+        }
+        return { ...c, sort: sort }
+      });
+
+      const sort = newColumns.find(c => c.name === action.payload.column.name).sort;
+
+      return { ...state, ...{ columns: newColumns, filter: { ...state.filter, ...{ orderBy: [action.payload.column, sort] } } } };
     default:
       return state;
   }

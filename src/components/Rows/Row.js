@@ -6,7 +6,7 @@ function Row({ columns, row, paintRows = [] }) {
   const { activeRow } = state;
   const [styleRow, setStyleRow] = useState(null);
   const [styleCell, setStyleCell] = useState([]);
-
+  
   const render = (column, val) => {
     if (!column.render)
       return val;

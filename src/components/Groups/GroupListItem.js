@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext, useState } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
 import { SET_GROUP_POSITION } from '../Constants/ActionTypes';
 import { Context } from '../context';
 function GroupListItem(props) {

@@ -191,7 +191,8 @@ class Groups {
       let countRows = 0;
       if (groupData.root === false) {
         countRows = 0;
-        this.filter(rows, path).map((row, i) => {
+        const f = this.filter(rows, path)
+        f.forEach((row, i) => {
           const newRow = row;
           newRow.path = path
           newRows.push(newRow);
