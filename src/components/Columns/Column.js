@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useContext } from 'react';
+import { SET_COLUMN_POSITION } from '../Constants/ActionTypes';
 import { Context } from '../context';
 function Column(props) {
   const { children, column, hoverElement } = props;
@@ -6,7 +7,7 @@ function Column(props) {
   const el = useRef();
  
   useEffect(() => {   
-    dispatch({ type: 'set-column-postion', payload: { name:column.name, position: el.current.getBoundingClientRect() } })    
+    dispatch({ type: SET_COLUMN_POSITION, payload: { name:column.name, position: el.current.getBoundingClientRect() } })    
   }, [state.mouseDown])
 
   return (

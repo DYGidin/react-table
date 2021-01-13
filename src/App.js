@@ -7,7 +7,7 @@ import Calc from './utils/Calc';
 function App() {
 
   const mock = {
-    name:'Countries Table',
+    name: 'Countries Table',
     columns: [{
       name: 'category',
       title: 'Category'
@@ -126,6 +126,7 @@ function App() {
         condition: (row) => row['country'] === 'China'
       }
     ],
+    theme: 'default',
     //filter: { searchStr: 'Jap' },
 
   }
@@ -134,7 +135,9 @@ function App() {
 
   const handleClick = () => {
     setTable({
-      ...table,  rows: [        
+      ...table,
+      theme: 'dark',
+      rows: [
         { category: 'Electronics', price: 25.4, quant: 12, status: 'processing', name: 'iPhone 5', country: 'Japan' },
         { category: 'Electronics', price: 66.5, quant: 45, status: 'delivery', name: 'Nexus 7', country: 'Japan' },
         { category: 'Electronics', price: 25, quant: 1, status: 'new', name: 'Samsung', country: 'Russia' }
@@ -142,10 +145,14 @@ function App() {
     });
   }
 
+  const handleSelectRow = (row) => {
+    console.log(row)
+  }
+
   return (
     <div className="app">
       <button onClick={handleClick}>test</button>
-      <Table table={table}></Table>
+      <Table table={table} onSelectRow={(row) => handleSelectRow(row)}></Table>
     </div>
   );
 }

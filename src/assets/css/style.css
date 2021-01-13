@@ -11,7 +11,9 @@
 .react-table__row {
   display: flex;
 }
-
+.react-table__groups-container {
+  background: #fcfcfc;
+}
 .react-table__columns {
   background: #fcfcfc;
 }
@@ -23,8 +25,6 @@
 .react-table__column {
   cursor: pointer;
   padding: 5px;
-  border-bottom: 1px solid #cdcdcd;
-  border-left: 1px solid #cdcdcd;
   width: 100%;
   text-align: left;
   display: flex;
@@ -36,12 +36,15 @@
   text-decoration: none;
 }
 
-.react-table__column + .react-table__column {
-  /* border-left: 1px solid #cdcdcd; */
+.move-component + .move-component .react-table__column {
+  border-left: 0;
+}
+
+.react-table__row.active {
+  outline: 1px solid;
 }
 
 .react-table__row-cell {
-  /* border: 1px solid #cdcdcd; */
   padding: 5px;
   width: 100%;
   overflow: hidden;
@@ -58,12 +61,10 @@
   border-bottom: none;
 }
 
-.react-table__row-cell + .react-table__row-cell {
-  /* border: 1px solid #cdcdcd; */
-}
-
 .react-table__footer {
   background: #fcfcfc;
+
+  border-top: 0;
 }
 
 .react-table__footer-cell {
@@ -71,12 +72,7 @@
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* border-top: 1px solid #cdcdcd; */
   font-weight: bold;
-}
-
-.react-table__footer-cell + .react-table__footer-cell {
-  /* border-left: 1px solid #cdcdcd; */
 }
 
 .react-table__footer-container {
@@ -95,6 +91,8 @@
 
 .react-table__groups-list {
   padding: 0;
+  padding-left: 5px;
+  padding-right: 5px;
   margin: 0;
   list-style: none;
   display: flex;

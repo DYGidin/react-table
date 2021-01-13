@@ -1,9 +1,12 @@
 const Themes = {
-  light: {
+  default: {
     columns: {
-      background: '#fff'
+      background: 'rgb(235 231 231)',
+      borderColor: '#ccc'
     },
-
+    rows:{
+      activeColor:'black'
+    },
     background: '#444',
   },
   dark: {
@@ -13,13 +16,12 @@ const Themes = {
       borderColor: 'transparent'
     },
     rows: {
-      background: '#2b2b2b',
+      background: 'rgb(57 56 56)',
       borderColor: 'transparent',
       color:'#fff'
     },
-
     footer:{
-      background: '#444857',
+      background: '#444',
       borderColor: 'transparent',
       color:'#fff'
     },

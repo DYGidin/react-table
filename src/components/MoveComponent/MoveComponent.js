@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useContext, useState } from 'react';
-import { Context } from '../context';
+import React, { useRef, useEffect, useState } from 'react';
+
 function MoveComponent({ children, handleMoveStart, handleMove, handleMoveStop }) {
   const [style, setStyle] = useState(null)
   const [mouseDown, setMouseDown] = useState(false);

@@ -14,11 +14,8 @@ import '../assets/css/style.css';
 import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
 import Themes from './themes';
-
-
-/** 
- * Проверить сортировку 
- */
+import { CALC_FORMULA, DRAG_ELEMENT, MOUSE_DOWN, MOVE_ELEMENT, READY, SET_DATA, SET_GROUPLIST, SET_HOVER } from './Constants/ActionTypes';
+import { COLUMN, CONTAINER, GROUP } from './Constants/ColumnTypes';
 
 function Table(props) {
 
@@ -27,38 +24,31 @@ function Table(props) {
 
   const [state, dispatch] = useReducer(reducer, table);
   const groupsListContainer = useRef();
-  const [theme, setTheme] = useState(Themes['dark']);
 
-  let { columns, groups, rows, filter, paintRows, ready, hoverElement, dragElement, groupsList } = state || null;
+  let { theme, columns, groups, rows, filter, paintRows, ready, hoverElement, dragElement, groupsList } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20);
-
-  // swith theme
-  useEffect(() => {
-    if (props.theme)
-      setTheme(props.theme)
-  }, props.theme)
 
   // load or table change
   useEffect(() => {
-    
+
     if (table.groups)
       createGroups();
 
-    dispatch({ type: 'ready', payload: true })
-    dispatch({ type: 'calc-formula' });
+    dispatch({ type: READY, payload: true })
+    dispatch({ type: CALC_FORMULA });
   }, [table]);
 
   // if prop rows has been change
   useEffect(() => {
-    dispatch({ type: 'set-data', payload: { rows: props.table.rows } });      
-    setTable({ ...table, ...{ rows: props.table.rows } })
+    dispatch({ type: SET_DATA, payload: { theme: Themes[props.table.theme], rows: props.table.rows } });
+    setTable({ ...table, ...{ rows: props.table.rows } });
   }, [props.table]);
 
   // groups update
   useEffect(() => {
     if (groupsList) {
       const newTable = { ...table, columns, groups: groupsList.map(g => g.name) }
-      setTable(newTable);      
+      setTable(newTable);
     }
   }, [updateGroups]);
 
@@ -70,23 +60,23 @@ function Table(props) {
   }, [ready]);
 
   useEffect(() => {
-    dispatch({ type: 'set-data', payload: { columns, filter: { ...filter } } });
+    dispatch({ type: SET_DATA, payload: { columns, filter: { ...filter } } });
   }, [columns])
 
   const createGroups = () => {
     const result = new Groups().create(table)
-    dispatch({ type: 'set-data', payload: result });
+    dispatch({ type: SET_DATA, payload: result });
     const list = []
     table.groups.forEach(g => {
       const c = columns.find(c => c.name === g);
       list.push({ name: c.name })
     })
-    dispatch({ type: 'set-grouplist', payload: list })
+    dispatch({ type: SET_GROUPLIST, payload: list })
   }
 
-  const handleMoveStart = (name, type = 'column') => {
-    dispatch({ type: 'mouse-down', payload: true });
-    dispatch({ type: 'drag-element', payload: { name, type } });
+  const handleMoveStart = (name, type = COLUMN) => {
+    dispatch({ type: MOUSE_DOWN, payload: true });
+    dispatch({ type: DRAG_ELEMENT, payload: { name, type } });
     isHoverOnGroupsList.current = false;
   }
 
@@ -99,11 +89,12 @@ function Table(props) {
       && position.top > topContainer
       && position.top < topContainer + heightContainer
     ) {
-      if (!isHoverOnGroupsList.current) {
+      if (!isHoverOnGroupsList.current) {        
         dispatch({
-          type: 'set-hover',
-          payload: { type: 'container', name: 'groupListContainer' }
+          type: SET_HOVER,
+          payload: { type: CONTAINER, name: 'groupListContainer' }
         })
+
         isHoverOnGroupsList.current = true;
       }
     };
@@ -117,19 +108,20 @@ function Table(props) {
           && position.left + (position.width / 2) < left + width
           && position.top + position.height > (top + (height / 2))
           && position.top + (position.height / 2) < top + height
-        ) {
-
+        ) {          
           dispatch({
-            type: 'set-hover',
-            payload: { type: 'column', name: column.name }
+            type: SET_HOVER,
+            payload: { type: COLUMN, name: column.name }
           })
         }
       }
     });
 
     if (groupsList && groupsList.length) {
+      
       groupsList.forEach(group => {
         if (!group.position) return;
+        
         const { left, top, height, width } = group.position;
         if (
           position.left + position.width > (left + (width / 2))
@@ -138,8 +130,8 @@ function Table(props) {
           && position.top + (position.height / 2) < top + height
         ) {
           dispatch({
-            type: 'set-hover',
-            payload: { type: 'group', name: group.name }
+            type: SET_HOVER,
+            payload: { type: GROUP, name: group.name }
           })
         }
       });
@@ -147,7 +139,7 @@ function Table(props) {
   }
 
   const refreshFilter = () => {
-    dispatch({ type: 'set-data', payload: { filter: { ...filter } } });
+    dispatch({ type: SET_DATA, payload: { filter: { ...filter } } });
     handleOrderBy(columns.find(c => c?.sort), false);
   }
 
@@ -162,24 +154,24 @@ function Table(props) {
         }
         return c;
       })
-      dispatch({ type: 'set-data', payload: { columns: columns } });
+      dispatch({ type: SET_DATA, payload: { columns: columns } });
       return;
     }
 
-    dispatch({ type: 'move-element', payload: dragElement });
-    dispatch({ type: 'mouse-down', payload: false });
-    dispatch({ type: 'set-hover', payload: '' });
-    dispatch({ type: 'drag-element', payload: '' });
+    dispatch({ type: MOVE_ELEMENT, payload: dragElement });
+    dispatch({ type: MOUSE_DOWN, payload: false });
+    dispatch({ type: SET_HOVER, payload: '' });
+    dispatch({ type: DRAG_ELEMENT, payload: '' });
 
-    if (groupsList)
+    if (groupsList) {
       setUpdateGroups(!updateGroups)
-    //refreshFilter();
-
+      refreshFilter()
+    }
   }
 
   const handleSearchBar = (value) => {
     dispatch({
-      type: 'set-data',
+      type: SET_DATA,
       payload: { filter: { ...filter, ...{ searchStr: value } } }
     })
   }
@@ -196,11 +188,15 @@ function Table(props) {
     });
 
     const sort = newColumns.find(c => c.name === column.name).sort;
-
     dispatch({
-      type: 'set-data',
+      type: SET_DATA,
       payload: { columns: newColumns, filter: { ...filter, ...{ orderBy: [column, sort] } } }
     })
+  }
+
+  const handleClick = (row) => {
+    dispatch({ type: SET_DATA, payload: { activeRow: row } });
+    props.onSelectRow(row)
   }
 
   const handleOpenClose = ({ group, open }) => {
@@ -215,20 +211,20 @@ function Table(props) {
         return g
     });
     dispatch({
-      type: 'set-data',
+      type: SET_DATA,
       payload: { groups: newGroups }
     })
   }
 
   return (
-    <Context.Provider value={{ handleOrderBy, dispatch, state, theme }}>
+    <Context.Provider value={{ handleOrderBy, handleClick, dispatch, state, theme }}>
       <div className="react-table">
-        <ul className="react-table__groups-list" ref={groupsListContainer}>
+        <ul className={'react-table__groups-list'} ref={groupsListContainer}>
           {groupsList &&
             groupsList.map((group, i) =>
               <MoveComponent
                 key={i}
-                handleMoveStart={() => handleMoveStart(group.name, 'group')}
+                handleMoveStart={() => handleMoveStart(group.name, GROUP)}
                 handleMoveStop={handleMoveStop}
                 handleMove={handleMove}>
                 <GroupListItem
@@ -256,7 +252,9 @@ function Table(props) {
                     <Column
                       key={i}
                       hoverElement={hoverElement?.name}
-                      column={column}>{column.name}</Column>
+                      column={column}>
+                      {column.name}
+                    </Column>
                   </MoveComponent>
                 )}
               </Columns>

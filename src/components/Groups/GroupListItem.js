@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useContext, useState } from 'react';
+import { SET_GROUP_POSITION } from '../Constants/ActionTypes';
 import { Context } from '../context';
 function GroupListItem(props) {
   const { children, column, hoverElement } = props;
@@ -6,7 +7,7 @@ function GroupListItem(props) {
   const el = useRef();
 
   useEffect(() => {    
-    dispatch({ type: 'set-group-position', 
+    dispatch({ type: SET_GROUP_POSITION, 
     payload: { name: column.name, position: el.current.getBoundingClientRect() } })
   }, [state.mouseDown])
 
