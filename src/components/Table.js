@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useReducer, useState, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { Columns, Column } from './Columns';
 import { Rows, Row, FilterRows } from './Rows';
 import { Footer, FooterCell } from './Footer';
@@ -10,14 +11,14 @@ import SearchBar from './SearchBar/SearchBar';
 import { Context } from './context'
 import reducer from './reducer';
 import '../assets/css/style.css';
-
+import '../assets/fonts/boxicons/css/boxicons.min.css'
 import MoveComponent from './MoveComponent/MoveComponent';
 import GroupListItem from './Groups/GroupListItem';
 import Themes from './themes';
 import { CALC_FORMULA, DRAG_ELEMENT, MOUSE_DOWN, MOVE_ELEMENT, ORDER_BY, READY, SET_DATA, CREATE_GROUPS, SET_HOVER } from './Constants/ActionTypes';
 import { COLUMN, CONTAINER, GROUP } from './Constants/ColumnTypes';
 
-function Table(props) {
+export const Table = (props) => {
 
   const [table, setTable] = useState(props.table);
   const [updateGroups, setUpdateGroups] = useState(false);
@@ -25,13 +26,27 @@ function Table(props) {
   const [state, dispatch] = useReducer(reducer, table);
   const groupsListContainer = useRef();
 
-  let { theme, columns, groups, rows, filter, paintRows, ready, hoverElement, dragElement, groupsList } = state || null;
+  let {
+    theme,
+    columns,
+    groups,
+    rows,
+    filter,
+    paintRows,
+    ready,
+    hoverElement,
+    dragElement,
+    groupsList,
+    showGroups,
+    moveColumns,
+    showFooter,
+    showFilter } = state || null;
   const marginGroup = useMemo(() => columns.filter(col => col.isGroup === true).length * 20, [columns]);
 
   // load or table change
   useEffect(() => {
     if (table.groups)
-      dispatch({ type: CREATE_GROUPS, payload: table }) 
+      dispatch({ type: CREATE_GROUPS, payload: table })
     dispatch({ type: READY, payload: true })
     dispatch({ type: CALC_FORMULA });
 
@@ -40,7 +55,16 @@ function Table(props) {
   // if prop rows has been change
   useEffect(() => {
 
-    dispatch({ type: SET_DATA, payload: { theme: Themes[props.table.theme], rows: props.table.rows } });
+    dispatch({
+      type: SET_DATA, payload: {
+        theme: Themes[props.table.theme],
+        showGroups: props.table.showGroups,
+        moveColumns: props.table.moveColumns,
+        showFooter: props.table.showFooter,
+        showFilter: props.table.showFilter,
+        rows: props.table.rows
+      }
+    });
     setTable({ ...table, ...{ rows: props.table.rows } });
   }, [props.table]);
 
@@ -72,22 +96,25 @@ function Table(props) {
 
   const isHoverOnGroupsList = useRef(false)
   const handleMove = (position) => {
-    const { left: leftContainer, top: topContainer, height: heightContainer, width: widthContainer } = groupsListContainer.current.getBoundingClientRect();
-    if (
-      position.left > leftContainer
-      && position.left < leftContainer + widthContainer
-      && position.top > topContainer
-      && position.top < topContainer + heightContainer
-    ) {
-      if (!isHoverOnGroupsList.current) {
-        dispatch({
-          type: SET_HOVER,
-          payload: { type: CONTAINER, name: 'groupListContainer' }
-        })
+    if (groupsListContainer.current) {
+      const { left: leftContainer, top: topContainer, height: heightContainer, width: widthContainer } = groupsListContainer.current.getBoundingClientRect();
+      if (
+        position.left > leftContainer
+        && position.left < leftContainer + widthContainer
+        && position.top > topContainer
+        && position.top < topContainer + heightContainer
+      ) {
+        if (!isHoverOnGroupsList.current) {
+          dispatch({
+            type: SET_HOVER,
+            payload: { type: CONTAINER, name: 'groupListContainer' }
+          })
 
-        isHoverOnGroupsList.current = true;
-      }
-    };
+          isHoverOnGroupsList.current = true;
+        }
+      };
+    }
+
 
     columns.forEach(column => {
 
@@ -149,11 +176,11 @@ function Table(props) {
       return;
     }
 
-   
+
     dispatch({ type: MOVE_ELEMENT, payload: dragElement });
-    if (groupsList) {      
-      setUpdateGroups(!updateGroups)      
-    } 
+    if (groupsList) {
+      setUpdateGroups(!updateGroups)
+    }
     refreshFilter()
   }
 
@@ -198,43 +225,57 @@ function Table(props) {
     <Context.Provider value={{ handleOrderBy, handleClick, dispatch, state, theme }}>
       {ready ?
         <div className="react-table">
-          <ul className={'react-table__groups-list'} ref={groupsListContainer}>
-            {groupsList && groupsList.length ?
-              groupsList.map((group, i) =>
-                <MoveComponent
-                  key={i}
-                  handleMoveStart={() => handleMoveStart(group.name, GROUP)}
-                  handleMoveStop={handleMoveStop}
-                  handleMove={handleMove}>
-                  <GroupListItem
+          {showGroups &&
+            <ul className={'react-table__groups-list'} ref={groupsListContainer}>
+              {groupsList && groupsList.length ?
+                groupsList.map((group, i) =>
+                  <MoveComponent
                     key={i}
-                    hoverElement={hoverElement?.name}
-                    column={group}>{group.name}</GroupListItem>
-                </MoveComponent>
-              ) : <li className={'react-table__groups-list-empty'}>Move column here for grouping</li>
-            }
-          </ul>
-          <SearchBar
-            onChange={value => handleSearchBar(value)}
-            value={filter?.searchStr}></SearchBar>
+                    handleMoveStart={() => handleMoveStart(group.name, GROUP)}
+                    handleMoveStop={handleMoveStop}
+                    handleMove={handleMove}>
+                    <GroupListItem
+                      key={i}
+                      hoverElement={hoverElement?.name}
+                      column={group}>{group.name}</GroupListItem>
+                  </MoveComponent>
+                ) : <li className={'react-table__groups-list-empty'}>Move column here for grouping</li>
+              }
+            </ul>
+          }
+          {showFilter &&
+            <SearchBar
+              onChange={value => handleSearchBar(value)}
+              value={filter?.searchStr}></SearchBar>}
           {groups?.length ?
             <GroupsComponent>
               <div style={{ marginLeft: marginGroup }}>
                 <Columns>
                   {columns.filter(c => !c?.isGroup && c?.visible !== false).map((column, i) =>
-                    <MoveComponent
-                      key={i}
-                      handleMoveStart={() => handleMoveStart(column.name)}
-                      handleMoveStop={handleMoveStop}
-                      handleMove={handleMove}
-                    >
-                      <Column
-                        key={i}
-                        hoverElement={hoverElement?.name}
-                        column={column}>
-                        {column.name}
-                      </Column>
-                    </MoveComponent>
+                    <React.Fragment key={i}>
+                      {moveColumns ?
+                        <MoveComponent
+                          key={i}
+                          handleMoveStart={() => handleMoveStart(column.name)}
+                          handleMoveStop={handleMoveStop}
+                          handleMove={handleMove}
+                        >
+                          <Column
+                            key={i}
+                            hoverElement={hoverElement?.name}
+                            column={column}>
+                            {column.name}
+                          </Column>
+                        </MoveComponent>
+                        :
+                        <Column
+                          key={i}
+                          hoverElement={hoverElement?.name}
+                          column={column}>
+                          {column.name}
+                        </Column>
+                      }
+                    </React.Fragment>
                   )}
                 </Columns>
               </div>
@@ -259,19 +300,21 @@ function Table(props) {
                             }>
                           </FilterRows>
                         </Rows>
-                        <Footer columns={columns}>
-                          {columns.map((column, i) =>
-                            !column?.isGroup && column?.visible !== false &&
-                            <FilterRows
-                              rows={rows.filter(r => r.path === group.path)}
-                              filter={filter}
-                              key={i}
-                              result={(rows, i) =>
-                                <FooterCell column={column} rows={rows} />
-                              }>
-                            </FilterRows>
-                          )}
-                        </Footer>
+                        {showFooter &&
+                          <Footer columns={columns}>
+                            {columns.map((column, i) =>
+                              !column?.isGroup && column?.visible !== false &&
+                              <FilterRows
+                                rows={rows.filter(r => r.path === group.path)}
+                                filter={filter}
+                                key={i}
+                                result={(rows, i) =>
+                                  <FooterCell column={column} rows={rows} />
+                                }>
+                              </FilterRows>
+                            )}
+                          </Footer>
+                        }
                       </div>
                     </>}
                 </React.Fragment>
@@ -281,19 +324,29 @@ function Table(props) {
             <>
               <Columns>
                 {columns.filter(c => c?.visible !== false).map((column, i) =>
-                  <MoveComponent
-                    key={i}
-                    handleMoveStart={() => handleMoveStart(column.name)}
-                    handleMoveStop={handleMoveStop}
-                    handleMove={handleMove}
-                  >
-                    <Column
-                      key={i}
-                      hoverElement={hoverElement?.name}
-                      column={column}>
-                      {column.name}
-                    </Column>
-                  </MoveComponent>
+                  <React.Fragment key={i}>
+                    {moveColumns ?
+                      <MoveComponent
+                        key={i}
+                        handleMoveStart={() => handleMoveStart(column.name)}
+                        handleMoveStop={handleMoveStop}
+                        handleMove={handleMove}
+                      >
+                        <Column
+                          key={i}
+                          hoverElement={hoverElement?.name}
+                          column={column}>
+                          {column.name}
+                        </Column>
+                      </MoveComponent>
+                      :
+                      <Column
+                        key={i}
+                        hoverElement={hoverElement?.name}
+                        column={column}>
+                        {column.name}
+                      </Column>}
+                  </React.Fragment>
                 )}
               </Columns>
               <Rows>
@@ -306,18 +359,20 @@ function Table(props) {
                   }>
                 </FilterRows>
               </Rows>
-              <Footer columns={columns}>
-                {columns.filter(c => c?.visible !== false).map((column, i) =>
-                  <FilterRows
-                    rows={rows}
-                    filter={filter}
-                    key={i}
-                    result={(rows, i) =>
-                      <FooterCell column={column} rows={rows} />
-                    }>
-                  </FilterRows>
-                )}
-              </Footer>
+              {showFooter &&
+                <Footer columns={columns}>
+                  {columns.filter(c => c?.visible !== false).map((column, i) =>
+                    <FilterRows
+                      rows={rows}
+                      filter={filter}
+                      key={i}
+                      result={(rows, i) =>
+                        <FooterCell column={column} rows={rows} />
+                      }>
+                    </FilterRows>
+                  )}
+                </Footer>
+              }
             </>
           }
         </div>
@@ -326,4 +381,36 @@ function Table(props) {
   );
 }
 
-export default Table;
+
+Table.propTypes = {
+  table: PropTypes.shape({
+    name: PropTypes.string,
+    columns: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      type: PropTypes.func,
+      render: PropTypes.func,
+      sort: PropTypes.oneOf(['asc', 'desc']),
+      formula: PropTypes.string,
+      total: PropTypes.func
+    })),
+    rows: PropTypes.array,
+    paintRows: PropTypes.arrayOf(PropTypes.shape({
+      type: PropTypes.oneOf(['row', 'cell']),
+      name: PropTypes.string.isRequired,
+      style: PropTypes.object.isRequired,
+      condition: PropTypes.func.isRequired
+    })),
+    theme: PropTypes.string,
+    activeRow: PropTypes.number,
+    groups: PropTypes.array,
+    showGroups: PropTypes.bool,
+    showFooter: PropTypes.bool,
+    moveColumns: PropTypes.bool,
+    showFilter: PropTypes.bool,
+    filter: PropTypes.shape({
+      searchStr: PropTypes.string.isRequired
+    }),
+    onSelectRow: PropTypes.func,
+  })
+}

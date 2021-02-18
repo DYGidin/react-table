@@ -2,10 +2,12 @@ const Themes = {
   default: {
     columns: {
       background: 'rgb(235 231 231)',
-      borderColor: '#ccc'
+      borderColor: '#ccc',
+      color: '#000'
     },
-    rows:{
-      activeColor:'black'
+    rows: {
+      activeColor: 'black',
+      background: '#fff'
     },
     background: '#444',
   },
@@ -18,12 +20,12 @@ const Themes = {
     rows: {
       background: 'rgb(57 56 56)',
       borderColor: 'transparent',
-      color:'#fff'
+      color: '#fff'
     },
-    footer:{
+    footer: {
       background: '#444',
       borderColor: 'transparent',
-      color:'#fff'
+      color: '#fff'
     },
     background: '#222222',
   },

@@ -6,7 +6,7 @@ function Row({ columns, row, paintRows = [] }) {
   const { activeRow } = state;
   const [styleRow, setStyleRow] = useState(null);
   const [styleCell, setStyleCell] = useState([]);
-  
+
   const render = (column, val) => {
     if (!column.render)
       return val;
@@ -43,8 +43,8 @@ function Row({ columns, row, paintRows = [] }) {
   }, [row])
 
   return (
-    <div className={'react-table__row ' + (activeRow === row ? 'active' : '')} 
-      style={{ ...theme.rows, ...styleRow, ...{outlineColor:theme.rows?.activeColor} }} onClick={() => handleClick(row)}>
+    <div className={'react-table__row ' + (activeRow === row ? 'active' : '')}
+      style={{ ...theme.rows, ...styleRow, ...{ outlineColor: theme.rows?.activeColor } }} onClick={() => handleClick(row)}>
       {rowCells}
     </div>
   );
