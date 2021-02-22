@@ -136,7 +136,7 @@ function App() {
     moveColumns: true,
     showFooter: true,
     showFilter: true,
-    groups:['category', 'status']
+    //groups:['category', 'status']
     //filter: { searchStr: 'Jap' },
   }
 

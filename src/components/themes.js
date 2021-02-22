@@ -14,13 +14,13 @@ const Themes = {
   dark: {
     columns: {
       background: '#444',
-      color: '#fff',
+      color: 'rgb(218 213 213)',
       borderColor: 'transparent'
     },
     rows: {
       background: 'rgb(57 56 56)',
       borderColor: 'transparent',
-      color: '#fff'
+      color: 'rgb(218 213 213)'
     },
     footer: {
       background: '#444',

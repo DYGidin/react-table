@@ -10,7 +10,7 @@ function SearchBar({ onChange, value }) {
 
   return (
     <div className="react-table__search-bar">
-      <input type="text" value={searchStr} onChange={(e) => handleOnChange(e)} />
+      <input type="text" value={searchStr} onChange={(e) => handleOnChange(e)} placeholder={'Search...'} />
     </div>
   );
 }
